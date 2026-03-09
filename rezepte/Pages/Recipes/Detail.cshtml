@@ -189,7 +189,7 @@
         <form method="post" asp-page-handler="ToggleFavorite" class="mb-0">
             <input type="hidden" name="id" value="@Model.Recipe.Id" />
             <button class="btn btn-sm @(Model.Recipe.IsFavorite ? "btn-warning" : "btn-outline-warning")">
-                @(Model.Recipe.IsFavorite ? "⭐ Favorit" : "☆ Favorit")
+                @(Model.Recipe.IsFavorite ? "👑 Favorit" : "♡ Favorit")
             </button>
         </form>
 
