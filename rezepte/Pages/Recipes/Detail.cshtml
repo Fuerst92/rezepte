@@ -153,6 +153,30 @@
         gap: 8px;
         padding: 0 4px;
     }
+
+    /* ── Druckansicht ──
+     * @media print = diese Styles gelten NUR wenn die Seite gedruckt wird.
+     * Der Browser blendet alles mit display:none aus, bevor er druckt.
+     * So wird ein sauberes, aufgeräumtes Druckbild erzeugt.
+     */
+    @media print {
+        /* Navigation und Footer ausblenden */
+        .site-header,
+        .site-footer,
+        .recipe-actions { display: none !important; }
+
+        /* Hintergrundfarbe weiß, kein Schatten, kein Rand für Druck */
+        body { background: white !important; }
+        .recipe-card {
+            box-shadow: none !important;
+            border: none !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
+
+        /* Bild beim Druck auf max. halbe Seite begrenzen */
+        .recipe-hero { height: 200px !important; }
+    }
 </style>
 
 <div class="container-fluid px-3">
@@ -168,6 +192,9 @@
                 @(Model.Recipe.IsFavorite ? "⭐ Favorit" : "☆ Favorit")
             </button>
         </form>
+
+        <!-- onclick="window.print()" ruft die Druckfunktion des Browsers auf -->
+        <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">🖨️ Drucken</button>
 
         <form method="post" asp-page-handler="Delete" class="mb-0 ms-auto"
               onsubmit="return confirm('Rezept wirklich löschen?')">
