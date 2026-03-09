@@ -1,0 +1,249 @@
+@page "{id:int}"
+@model rezepte.Pages.Recipes.DetailModel
+@{
+    ViewData["Title"] = Model.Recipe.Title;
+    var ingredients = Model.Recipe.Ingredients
+        .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+        .Select(i => i.Trim())
+        .ToList();
+    var steps = Model.Recipe.Steps
+        .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+        .Select(s => s.Trim())
+        .ToList();
+}
+
+<style>
+    .recipe-card {
+        max-width: 780px;
+        margin: 40px auto;
+        background: #fff;
+        border: 1px solid #e0ddd8;
+        border-radius: 4px;
+        overflow: hidden;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    }
+
+    .recipe-hero {
+        width: 100%;
+        height: 320px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .recipe-hero-placeholder {
+        width: 100%;
+        height: 320px;
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 5rem;
+    }
+
+    .recipe-body {
+        padding: 40px 48px 32px;
+    }
+
+    .recipe-title {
+        font-family: 'Dancing Script', cursive;
+        font-size: 3rem;
+        text-align: center;
+        color: #1c1c1c;
+        margin-bottom: 8px;
+        line-height: 1.2;
+    }
+
+    .recipe-description {
+        text-align: center;
+        color: #6b7280;
+        font-size: 0.95rem;
+        margin-bottom: 32px;
+    }
+
+    .section-header {
+        text-align: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #374151;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .section-header::before,
+    .section-header::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 60px;
+        height: 1px;
+        background: #d1d5db;
+    }
+
+    .section-header::before { right: calc(50% + 80px); }
+    .section-header::after  { left:  calc(50% + 80px); }
+
+    .ingredients-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px 24px;
+        margin-bottom: 36px;
+        font-size: 0.9rem;
+        color: #374151;
+    }
+
+    .ingredients-grid span {
+        padding: 4px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .steps-list {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 32px;
+    }
+
+    .steps-list li {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+        color: #374151;
+        line-height: 1.7;
+        text-align: justify;
+    }
+
+    .step-number {
+        font-weight: 700;
+        color: #1a1a1a;
+        min-width: 20px;
+        padding-top: 1px;
+    }
+
+    .recipe-divider {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 28px 0;
+    }
+
+    .recipe-meta {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    .recipe-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .recipe-meta-item .icon {
+        font-size: 1.1rem;
+    }
+
+    .recipe-actions {
+        max-width: 780px;
+        margin: 0 auto 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 4px;
+    }
+</style>
+
+<div class="container-fluid px-3">
+
+    <!-- Aktions-Leiste oben -->
+    <div class="recipe-actions">
+        <a asp-page="/Index" class="btn btn-sm btn-outline-secondary">← Zurück</a>
+        <a asp-page="/Recipes/Edit" asp-route-id="@Model.Recipe.Id" class="btn btn-sm btn-outline-secondary">✏️ Bearbeiten</a>
+
+        <form method="post" asp-page-handler="ToggleFavorite" class="mb-0">
+            <input type="hidden" name="id" value="@Model.Recipe.Id" />
+            <button class="btn btn-sm @(Model.Recipe.IsFavorite ? "btn-warning" : "btn-outline-warning")">
+                @(Model.Recipe.IsFavorite ? "⭐ Favorit" : "☆ Favorit")
+            </button>
+        </form>
+
+        <form method="post" asp-page-handler="Delete" class="mb-0 ms-auto"
+              onsubmit="return confirm('Rezept wirklich löschen?')">
+            <input type="hidden" name="id" value="@Model.Recipe.Id" />
+            <button class="btn btn-sm btn-outline-danger">🗑️ Löschen</button>
+        </form>
+    </div>
+
+    <!-- Rezept-Karte -->
+    <div class="recipe-card">
+
+        <!-- Bild -->
+        @if (!string.IsNullOrEmpty(Model.Recipe.ImageUrl))
+        {
+            <img src="@Model.Recipe.ImageUrl" class="recipe-hero" alt="@Model.Recipe.Title">
+        }
+        else
+        {
+            <div class="recipe-hero-placeholder">🍴</div>
+        }
+
+        <div class="recipe-body">
+
+            <!-- Titel & Beschreibung -->
+            <h1 class="recipe-title">@Model.Recipe.Title</h1>
+            @if (!string.IsNullOrEmpty(Model.Recipe.Description))
+            {
+                <p class="recipe-description">@Model.Recipe.Description</p>
+            }
+
+            <hr class="recipe-divider">
+
+            <!-- Zutaten -->
+            <h2 class="section-header">Zutaten</h2>
+            <div class="ingredients-grid">
+                @foreach (var ingredient in ingredients)
+                {
+                    <span>@ingredient</span>
+                }
+            </div>
+
+            <hr class="recipe-divider">
+
+            <!-- Zubereitung -->
+            <h2 class="section-header">Zubereitung</h2>
+            <ol class="steps-list">
+                @for (int i = 0; i < steps.Count; i++)
+                {
+                    <li>
+                        <span class="step-number">@(i + 1).</span>
+                        <span>@steps[i]</span>
+                    </li>
+                }
+            </ol>
+
+            <!-- Meta-Infos -->
+            <hr class="recipe-divider">
+            <div class="recipe-meta">
+                <div class="recipe-meta-item">
+                    <span class="icon">🏷️</span>
+                    <span>@Model.Recipe.Category.Name</span>
+                </div>
+                <div class="recipe-meta-item">
+                    <span class="icon">📅</span>
+                    <span>@Model.Recipe.CreatedAt.ToString("dd. MMMM yyyy")</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Recipe.VideoUrl))
+                {
+                    <div class="recipe-meta-item">
+                        <a href="@Model.Recipe.VideoUrl" target="_blank" class="text-danger text-decoration-none">
+                            <span class="icon">▶️</span> Video ansehen
+                        </a>
+                    </div>
+                }
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,66 @@
+@page "{id:int}"
+@model rezepte.Pages.Recipes.EditModel
+@{
+    ViewData["Title"] = "Rezept bearbeiten";
+}
+
+<div class="container mt-4" style="max-width: 700px;">
+
+    <h1 class="mb-4">Rezept bearbeiten</h1>
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <form method="post">
+        <input type="hidden" asp-for="Recipe.Id" />
+        <input type="hidden" asp-for="Recipe.CreatedAt" />
+
+        <div class="mb-3">
+            <label asp-for="Recipe.Title" class="form-label fw-bold"></label>
+            <input asp-for="Recipe.Title" class="form-control" />
+            <span asp-validation-for="Recipe.Title" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.CategoryId" class="form-label fw-bold">Kategorie</label>
+            <select asp-for="Recipe.CategoryId" asp-items="Model.CategoryOptions" class="form-select"></select>
+            <span asp-validation-for="Recipe.CategoryId" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.Description" class="form-label fw-bold"></label>
+            <textarea asp-for="Recipe.Description" class="form-control" rows="2"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.Ingredients" class="form-label fw-bold"></label>
+            <textarea asp-for="Recipe.Ingredients" class="form-control" rows="6"></textarea>
+            <div class="form-text">Eine Zutat pro Zeile</div>
+            <span asp-validation-for="Recipe.Ingredients" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.Steps" class="form-label fw-bold"></label>
+            <textarea asp-for="Recipe.Steps" class="form-control" rows="8"></textarea>
+            <div class="form-text">Einen Schritt pro Zeile</div>
+            <span asp-validation-for="Recipe.Steps" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.ImageUrl" class="form-label fw-bold"></label>
+            <input asp-for="Recipe.ImageUrl" class="form-control" />
+            <span asp-validation-for="Recipe.ImageUrl" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.VideoUrl" class="form-label fw-bold"></label>
+            <input asp-for="Recipe.VideoUrl" class="form-control" />
+            <span asp-validation-for="Recipe.VideoUrl" class="text-danger small"></span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">💾 Speichern</button>
+            <a asp-page="/Recipes/Detail" asp-route-id="@Model.Recipe.Id"
+               class="btn btn-outline-secondary">Abbrechen</a>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,151 @@
+@page
+@model rezepte.Pages.IndexModel
+@{
+    ViewData["Title"] = "Alle Rezepte";
+    var featured = Model.Recipes.FirstOrDefault();
+    var rest = Model.Recipes.Skip(1).ToList();
+    var showFeatured = !Model.FavoritesOnly && Model.SelectedCategoryId == null && Model.Recipes.Count > 1;
+    var gridRecipes = showFeatured ? rest : Model.Recipes;
+}
+
+<!-- Hero -->
+<div class="page-hero">
+    <div class="container">
+        <span class="section-heading" style="margin-bottom:0;">
+            <span class="label">Willkommen</span>
+            <h1>Alle Rezepte</h1>
+        </span>
+    </div>
+</div>
+
+<div class="container" style="max-width: 1100px;">
+
+    <!-- Filter -->
+    <div class="filter-bar">
+        <a asp-page="/Index"
+           class="filter-pill @(Model.SelectedCategoryId == null && !Model.FavoritesOnly ? "active" : "")">
+            Alle (@Model.Recipes.Count)
+        </a>
+        <a asp-page="/Index" asp-route-favoritesOnly="true"
+           class="filter-pill fav-pill @(Model.FavoritesOnly ? "active" : "")">
+            ♥ Favoriten
+        </a>
+        @foreach (var category in Model.Categories)
+        {
+            <a asp-page="/Index" asp-route-selectedCategoryId="@category.Id"
+               class="filter-pill @(Model.SelectedCategoryId == category.Id ? "active" : "")">
+                @category.Name
+            </a>
+        }
+    </div>
+
+    <!-- Leer-Zustand -->
+    @if (!Model.Recipes.Any())
+    {
+        <div class="text-center" style="padding: 80px 0;">
+            <div style="font-size:3rem; color:#c8c0b4; margin-bottom:20px;">🍴</div>
+            <h3 style="font-family:'Playfair Display',serif; margin-bottom:8px;">Noch keine Rezepte</h3>
+            <p style="color:#7a7670; margin-bottom:28px;">Füge dein erstes Rezept hinzu und starte deine Sammlung.</p>
+            <a asp-page="/Recipes/Create" class="btn-accent">Jetzt erstellen</a>
+        </div>
+    }
+    else
+    {
+        <!-- Featured -->
+        @if (showFeatured && featured != null)
+        {
+            <div class="mb-5">
+                <div class="section-divider"><span>Empfehlung des Tages</span></div>
+                <div class="row g-0 align-items-stretch" style="background:#fff; border: 1px solid var(--border);">
+                    <div class="col-md-6">
+                        @if (!string.IsNullOrEmpty(featured.ImageUrl))
+                        {
+                            <div style="overflow:hidden; height:100%; min-height:340px;">
+                                <img src="@featured.ImageUrl" alt="@featured.Title"
+                                     style="width:100%; height:100%; object-fit:cover; display:block;">
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="height:100%; min-height:340px; background:#ede9e3; display:flex; align-items:center; justify-content:center; font-size:4rem; color:#c8c0b4;">🍴</div>
+                        }
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center">
+                        <div style="padding: 40px 48px;">
+                            <span style="font-size:0.68rem; letter-spacing:2.5px; text-transform:uppercase; color:var(--accent); font-weight:700; display:block; margin-bottom:10px;">
+                                @featured.Category.Name
+                            </span>
+                            <h2 style="font-family:'Playfair Display',serif; font-size:1.9rem; line-height:1.25; margin-bottom:14px;">
+                                @featured.Title
+                            </h2>
+                            @if (!string.IsNullOrEmpty(featured.Description))
+                            {
+                                <p style="color:#7a7670; font-size:0.9rem; line-height:1.6; margin-bottom:24px;">@featured.Description</p>
+                            }
+                            <div class="d-flex align-items-center gap-3">
+                                <a asp-page="/Recipes/Detail" asp-route-id="@featured.Id" class="btn-ink">Zum Rezept</a>
+                                <form method="post" asp-page-handler="ToggleFavorite" class="mb-0">
+                                    <input type="hidden" name="id" value="@featured.Id" />
+                                    <button type="submit" class="fav-btn @(featured.IsFavorite ? "active" : "")" title="Favorit">
+                                        @(featured.IsFavorite ? "♥" : "♡")
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Rezept-Grid -->
+        @if (gridRecipes.Any())
+        {
+            <div class="section-divider"><span>Alle Rezepte</span></div>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-5 mb-5">
+                @foreach (var recipe in gridRecipes)
+                {
+                    <div class="col">
+                        <div>
+                            <a asp-page="/Recipes/Detail" asp-route-id="@recipe.Id" class="recipe-card d-block text-decoration-none">
+                                <div class="img-wrap">
+                                    @if (!string.IsNullOrEmpty(recipe.ImageUrl))
+                                    {
+                                        <img src="@recipe.ImageUrl" alt="@recipe.Title">
+                                    }
+                                    else
+                                    {
+                                        <div class="img-placeholder">🍴</div>
+                                    }
+                                </div>
+                            </a>
+                            <div class="card-meta">
+                                <span class="category-label">@recipe.Category.Name</span>
+                                <div class="card-title">
+                                    <a asp-page="/Recipes/Detail" asp-route-id="@recipe.Id"
+                                       style="text-decoration:none; color:inherit;">
+                                        @recipe.Title
+                                    </a>
+                                </div>
+                                @if (!string.IsNullOrEmpty(recipe.Description))
+                                {
+                                    <p class="card-desc">@recipe.Description</p>
+                                }
+                                <div class="card-actions">
+                                    <a asp-page="/Recipes/Detail" asp-route-id="@recipe.Id" class="read-more">
+                                        Zum Rezept →
+                                    </a>
+                                    <form method="post" asp-page-handler="ToggleFavorite" class="mb-0">
+                                        <input type="hidden" name="id" value="@recipe.Id" />
+                                        <button type="submit" class="fav-btn @(recipe.IsFavorite ? "active" : "")" title="Favorit">
+                                            @(recipe.IsFavorite ? "♥" : "♡")
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>

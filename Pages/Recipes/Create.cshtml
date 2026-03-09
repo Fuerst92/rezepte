@@ -1,0 +1,71 @@
+@page
+@model rezepte.Pages.Recipes.CreateModel
+@{
+    ViewData["Title"] = "Neues Rezept";
+}
+
+<div class="container mt-4" style="max-width: 700px;">
+
+    <h1 class="mb-4">Neues Rezept erstellen</h1>
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <form method="post">
+        <div class="mb-3">
+            <label asp-for="Recipe.Title" class="form-label fw-bold"></label>
+            <input asp-for="Recipe.Title" class="form-control" placeholder="z.B. Spaghetti Bolognese" />
+            <span asp-validation-for="Recipe.Title" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.CategoryId" class="form-label fw-bold">Kategorie</label>
+            <select asp-for="Recipe.CategoryId" asp-items="Model.CategoryOptions" class="form-select">
+                <option value="">-- Kategorie wählen --</option>
+            </select>
+            <span asp-validation-for="Recipe.CategoryId" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.Description" class="form-label fw-bold"></label>
+            <textarea asp-for="Recipe.Description" class="form-control" rows="2"
+                      placeholder="Kurze Beschreibung des Rezepts"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.Ingredients" class="form-label fw-bold"></label>
+            <textarea asp-for="Recipe.Ingredients" class="form-control" rows="6"
+                      placeholder="Eine Zutat pro Zeile:&#10;200g Mehl&#10;3 Eier&#10;100ml Milch"></textarea>
+            <div class="form-text">Eine Zutat pro Zeile eingeben</div>
+            <span asp-validation-for="Recipe.Ingredients" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.Steps" class="form-label fw-bold"></label>
+            <textarea asp-for="Recipe.Steps" class="form-control" rows="8"
+                      placeholder="Einen Schritt pro Zeile:&#10;Zwiebeln würfeln und anbraten&#10;Hackfleisch hinzufügen"></textarea>
+            <div class="form-text">Einen Schritt pro Zeile eingeben (Nummerierung nicht nötig)</div>
+            <span asp-validation-for="Recipe.Steps" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.ImageUrl" class="form-label fw-bold"></label>
+            <input asp-for="Recipe.ImageUrl" class="form-control"
+                   placeholder="https://beispiel.com/bild.jpg" />
+            <div class="form-text">Optional: Link zu einem Bild im Internet</div>
+            <span asp-validation-for="Recipe.ImageUrl" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.VideoUrl" class="form-label fw-bold"></label>
+            <input asp-for="Recipe.VideoUrl" class="form-control"
+                   placeholder="https://youtube.com/watch?v=..." />
+            <div class="form-text">Optional: YouTube-Link</div>
+            <span asp-validation-for="Recipe.VideoUrl" class="text-danger small"></span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">💾 Rezept speichern</button>
+            <a asp-page="/Index" class="btn btn-outline-secondary">Abbrechen</a>
+        </div>
+    </form>
+</div>
