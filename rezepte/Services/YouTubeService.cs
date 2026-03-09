@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace rezepte.Services;
 
@@ -6,33 +7,17 @@ public class YouTubeService
 {
     private readonly HttpClient _http;
 
-    // Invidious + Piped Server (kein API-Key nötig!)
-    private readonly string[] _invidiousInstances =
-    {
-        "https://inv.nadeko.net",
-        "https://invidious.privacyredirect.com",
-        "https://invidious.nerdvpn.de",
-        "https://iv.melmac.space",
-        "https://invidious.protokolla.fi",
-        "https://inv.tux.pizza",
-        "https://invidious.privacydev.net"
-    };
-
-    // Piped API als zweite Option
-    private readonly string[] _pipedInstances =
-    {
-        "https://pipedapi.kavin.rocks",
-        "https://pipedapi.adminforge.de",
-        "https://pipedapi.reallyaweso.me"
-    };
-
     public YouTubeService(HttpClient http)
     {
         _http = http;
-        _http.Timeout = TimeSpan.FromSeconds(10);
+        _http.Timeout = TimeSpan.FromSeconds(15);
+        // Normalen Browser simulieren damit YouTube antwortet
+        _http.DefaultRequestHeaders.Add("User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+        _http.DefaultRequestHeaders.Add("Accept-Language", "de-DE,de;q=0.9");
     }
 
-    // Extrahiert die Video-ID aus einer YouTube-URL
+    // Video-ID aus URL extrahieren
     public string? ExtractVideoId(string url)
     {
         if (string.IsNullOrWhiteSpace(url)) return null;
@@ -56,12 +41,6 @@ public class YouTubeService
             var end = url.IndexOfAny(new[] { '?', '&', '#' }, start);
             return end == -1 ? url[start..] : url[start..end];
         }
-        if (url.Contains("/live/"))
-        {
-            var start = url.IndexOf("/live/") + 6;
-            var end = url.IndexOfAny(new[] { '?', '&', '#' }, start);
-            return end == -1 ? url[start..] : url[start..end];
-        }
         if (url.Contains("v="))
         {
             var start = url.IndexOf("v=") + 2;
@@ -71,46 +50,65 @@ public class YouTubeService
         return null;
     }
 
-    // Holt Video-Infos - zuerst Invidious, dann Piped als Fallback
+    // Video-Infos direkt von YouTube holen (kein API-Key nötig)
     public async Task<(string Title, string Description, string ThumbnailUrl)?> GetVideoInfoAsync(string videoId)
     {
-        // 1. Invidious versuchen
-        foreach (var server in _invidiousInstances)
+        // Schritt 1: Titel + Thumbnail über oEmbed (offizielle kostenlose YouTube API)
+        string title = "";
+        string thumbnail = $"https://i.ytimg.com/vi/{videoId}/hqdefault.jpg";
+
+        try
         {
-            try
-            {
-                var response = await _http.GetStringAsync($"{server}/api/v1/videos/{videoId}");
-                using var doc = JsonDocument.Parse(response);
-
-                var title = doc.RootElement.GetProperty("title").GetString() ?? "";
-                var description = doc.RootElement.GetProperty("description").GetString() ?? "";
-
-                var thumbnail = "";
-                if (doc.RootElement.TryGetProperty("videoThumbnails", out var thumbs) && thumbs.GetArrayLength() > 0)
-                    thumbnail = thumbs[0].GetProperty("url").GetString() ?? "";
-
-                return (title, description, thumbnail);
-            }
-            catch { continue; }
+            var oembedUrl = $"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={videoId}&format=json";
+            var oembedJson = await _http.GetStringAsync(oembedUrl);
+            using var doc = JsonDocument.Parse(oembedJson);
+            title = doc.RootElement.GetProperty("title").GetString() ?? "";
+            if (doc.RootElement.TryGetProperty("thumbnail_url", out var thumb))
+                thumbnail = thumb.GetString() ?? thumbnail;
+        }
+        catch
+        {
+            // oEmbed fehlgeschlagen, weiter mit leerem Titel
         }
 
-        // 2. Piped API als Fallback
-        foreach (var server in _pipedInstances)
+        // Schritt 2: Beschreibung aus der YouTube-Seite extrahieren
+        string description = "";
+        try
         {
-            try
+            var pageUrl = $"https://www.youtube.com/watch?v={videoId}";
+            var html = await _http.GetStringAsync(pageUrl);
+
+            // og:description Meta-Tag auslesen
+            var metaMatch = Regex.Match(html,
+                @"<meta\s+(?:name|property)=""og:description""\s+content=""([^""]*)""\s*/?>",
+                RegexOptions.IgnoreCase);
+
+            if (!metaMatch.Success)
+                metaMatch = Regex.Match(html,
+                    @"<meta\s+content=""([^""]*)""\s+(?:name|property)=""og:description""\s*/?>",
+                    RegexOptions.IgnoreCase);
+
+            if (metaMatch.Success)
+                description = System.Net.WebUtility.HtmlDecode(metaMatch.Groups[1].Value);
+
+            // Titel aus HTML falls oEmbed fehlschlug
+            if (string.IsNullOrEmpty(title))
             {
-                var response = await _http.GetStringAsync($"{server}/streams/{videoId}");
-                using var doc = JsonDocument.Parse(response);
-
-                var title = doc.RootElement.GetProperty("title").GetString() ?? "";
-                var description = doc.RootElement.GetProperty("description").GetString() ?? "";
-                var thumbnail = doc.RootElement.GetProperty("thumbnailUrl").GetString() ?? "";
-
-                return (title, description, thumbnail);
+                var titleMatch = Regex.Match(html,
+                    @"<meta\s+(?:name|property)=""og:title""\s+content=""([^""]*)""\s*/?>",
+                    RegexOptions.IgnoreCase);
+                if (titleMatch.Success)
+                    title = System.Net.WebUtility.HtmlDecode(titleMatch.Groups[1].Value);
             }
-            catch { continue; }
+        }
+        catch
+        {
+            // HTML-Parsing fehlgeschlagen
         }
 
-        throw new Exception("Video-Infos konnten nicht abgerufen werden. Bitte später nochmal versuchen.");
+        if (string.IsNullOrEmpty(title))
+            throw new Exception("Video nicht gefunden oder nicht erreichbar.");
+
+        return (title, description, thumbnail);
     }
 }
