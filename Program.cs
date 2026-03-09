@@ -9,10 +9,18 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 builder.Services.AddRazorPages();
 
-// Datenbankpfad: lokal normal, auf Railway in /data/ (persistenter Speicher)
-var dbPath = Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT") != null
-    ? "/data/rezepte.db"
-    : "rezepte.db";
+// Datenbankpfad bestimmen
+string dbPath;
+if (Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT") != null)
+{
+    // Auf Railway: /data/ Ordner erstellen falls nicht vorhanden (Volume)
+    Directory.CreateDirectory("/data");
+    dbPath = "/data/rezepte.db";
+}
+else
+{
+    dbPath = "rezepte.db";
+}
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
