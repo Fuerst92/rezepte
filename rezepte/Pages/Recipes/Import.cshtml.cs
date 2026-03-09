@@ -169,11 +169,20 @@ public class ImportModel : PageModel
             return Page();
         }
 
-        Recipe.CreatedAt = DateTime.Now;
-        _db.Recipes.Add(Recipe);
-        await _db.SaveChangesAsync();
-
-        return RedirectToPage("/Recipes/Detail", new { id = Recipe.Id });
+        try
+        {
+            Recipe.CreatedAt = DateTime.Now;
+            _db.Recipes.Add(Recipe);
+            await _db.SaveChangesAsync();
+            return RedirectToPage("/Recipes/Detail", new { id = Recipe.Id });
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Speicherfehler: {ex.Message} | Inner: {ex.InnerException?.Message}";
+            LoadCategories();
+            RecipeLoaded = true;
+            return Page();
+        }
     }
 
     private void LoadCategories()
