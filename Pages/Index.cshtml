@@ -1,7 +1,7 @@
 @page
 @model rezepte.Pages.IndexModel
 @{
-    ViewData["Title"] = "Alle Rezepte";
+    ViewData["Title"] = "Meine Fürstlichen Rezepte";
     var featured = Model.Recipes.FirstOrDefault();
     var rest = Model.Recipes.Skip(1).ToList();
     var showFeatured = !Model.FavoritesOnly && Model.SelectedCategoryId == null && Model.Recipes.Count > 1;
@@ -13,7 +13,7 @@
     <div class="container">
         <span class="section-heading" style="margin-bottom:0;">
             <span class="label">Willkommen</span>
-            <h1>Alle Rezepte</h1>
+            <h1>Meine Fürstlichen Rezepte</h1>
         </span>
     </div>
 </div>
@@ -28,7 +28,7 @@
         </a>
         <a asp-page="/Index" asp-route-favoritesOnly="true"
            class="filter-pill fav-pill @(Model.FavoritesOnly ? "active" : "")">
-            ♥ Favoriten
+            👑 Favoriten
         </a>
         @foreach (var category in Model.Categories)
         {
@@ -87,7 +87,7 @@
                                 <form method="post" asp-page-handler="ToggleFavorite" class="mb-0">
                                     <input type="hidden" name="id" value="@featured.Id" />
                                     <button type="submit" class="fav-btn @(featured.IsFavorite ? "active" : "")" title="Favorit">
-                                        @(featured.IsFavorite ? "♥" : "♡")
+                                        @(featured.IsFavorite ? "👑" : "♡")
                                     </button>
                                 </form>
                             </div>
@@ -137,7 +137,7 @@
                                     <form method="post" asp-page-handler="ToggleFavorite" class="mb-0">
                                         <input type="hidden" name="id" value="@recipe.Id" />
                                         <button type="submit" class="fav-btn @(recipe.IsFavorite ? "active" : "")" title="Favorit">
-                                            @(recipe.IsFavorite ? "♥" : "♡")
+                                            @(recipe.IsFavorite ? "👑" : "♡")
                                         </button>
                                     </form>
                                 </div>
