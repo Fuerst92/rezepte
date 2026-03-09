@@ -20,6 +20,28 @@
 
 <div class="container" style="max-width: 1100px;">
 
+    <!-- Suchfeld -->
+    <form method="get" class="mb-3 d-flex gap-2">
+        @* Kategorie und Favoriten-Filter beim Suchen beibehalten *@
+        @if (Model.SelectedCategoryId.HasValue)
+        {
+            <input type="hidden" name="selectedCategoryId" value="@Model.SelectedCategoryId" />
+        }
+        @if (Model.FavoritesOnly)
+        {
+            <input type="hidden" name="favoritesOnly" value="true" />
+        }
+        <input type="text" name="searchQuery" value="@Model.SearchQuery"
+               class="form-control" placeholder="🔍 Rezept oder Zutat suchen..."
+               style="max-width: 400px;" />
+        <button type="submit" class="btn-accent px-4" style="border:none; cursor:pointer; white-space:nowrap;">Suchen</button>
+        @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+        {
+            <a asp-page="/Index" asp-route-selectedCategoryId="@Model.SelectedCategoryId"
+               class="btn-outline-ink px-3" style="white-space:nowrap;">✕ Löschen</a>
+        }
+    </form>
+
     <!-- Filter -->
     <div class="filter-bar">
         <a asp-page="/Index"
@@ -40,6 +62,14 @@
             </a>
         }
     </div>
+
+    <!-- Suchergebnis-Hinweis -->
+    @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+    {
+        <p style="color:var(--muted); font-size:0.85rem; margin-bottom:16px;">
+            @Model.Recipes.Count Ergebnis(se) für „@Model.SearchQuery"
+        </p>
+    }
 
     <!-- Leer-Zustand -->
     @if (!Model.Recipes.Any())

@@ -24,17 +24,35 @@ public class IndexModel : PageModel
     [BindProperty(SupportsGet = true)]
     public bool FavoritesOnly { get; set; }
 
+    // SupportsGet = true bedeutet: der Wert kommt aus der URL (?searchQuery=...)
+    // So bleibt die Suche auch nach dem Neuladen erhalten
+    [BindProperty(SupportsGet = true)]
+    public string? SearchQuery { get; set; }
+
     public async Task OnGetAsync()
     {
         Categories = await _db.Categories.OrderBy(c => c.Name).ToListAsync();
 
+        // AsQueryable() = Abfrage wird noch nicht ausgeführt, wir bauen sie erstmal zusammen
         var query = _db.Recipes.Include(r => r.Category).AsQueryable();
 
+        // Filter: Kategorie
         if (SelectedCategoryId.HasValue)
             query = query.Where(r => r.CategoryId == SelectedCategoryId.Value);
 
+        // Filter: Nur Favoriten
         if (FavoritesOnly)
             query = query.Where(r => r.IsFavorite);
+
+        // Filter: Suchbegriff in Titel ODER Zutaten
+        // string.IsNullOrWhiteSpace prüft ob die Suche leer ist
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            var term = SearchQuery.ToLower(); // Klein schreiben für Groß-/Kleinschreibung egal
+            query = query.Where(r =>
+                r.Title.ToLower().Contains(term) ||       // Titel enthält Suchbegriff
+                r.Ingredients.ToLower().Contains(term));  // ODER Zutaten enthalten ihn
+        }
 
         Recipes = await query.OrderByDescending(r => r.CreatedAt).ToListAsync();
     }
