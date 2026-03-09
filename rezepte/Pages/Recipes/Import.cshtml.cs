@@ -142,23 +142,30 @@ public class ImportModel : PageModel
     // ── Rezept speichern (für beide Tabs) ──
     public async Task<IActionResult> OnPostSaveAsync()
     {
+        // Leere URLs auf null setzen (damit [Url]-Validierung nicht stört)
         if (string.IsNullOrWhiteSpace(Recipe.ImageUrl)) Recipe.ImageUrl = null;
         if (string.IsNullOrWhiteSpace(Recipe.VideoUrl)) Recipe.VideoUrl = null;
-        if (string.IsNullOrWhiteSpace(Recipe.Description)) Recipe.Description = string.Empty;
 
-        // Felder aus ModelState entfernen die beim Import nicht relevant sind
-        foreach (var key in ModelState.Keys.ToList())
+        // Nur manuell prüfen was wirklich Pflicht ist
+        if (string.IsNullOrWhiteSpace(Recipe.Title))
         {
-            if (key.StartsWith("Recipe.") &&
-                (key == "Recipe.Category" || key == "Recipe.ImageUrl" || key == "Recipe.VideoUrl"))
-                ModelState.Remove(key);
-        }
-
-        if (!ModelState.IsValid)
-        {
+            ErrorMessage = "Titel ist erforderlich.";
             LoadCategories();
             RecipeLoaded = true;
-            ActiveTab = "youtube";
+            return Page();
+        }
+        if (string.IsNullOrWhiteSpace(Recipe.Ingredients))
+        {
+            ErrorMessage = "Zutaten sind erforderlich.";
+            LoadCategories();
+            RecipeLoaded = true;
+            return Page();
+        }
+        if (string.IsNullOrWhiteSpace(Recipe.Steps))
+        {
+            ErrorMessage = "Zubereitung ist erforderlich.";
+            LoadCategories();
+            RecipeLoaded = true;
             return Page();
         }
 
