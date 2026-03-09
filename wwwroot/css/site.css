@@ -20,3 +20,32 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+@media print {
+  /* Navigation, Buttons und Breadcrumb verstecken */
+  nav, header, footer, .navbar, .breadcrumb,
+  .no-print, form, .btn {
+    display: none !important;
+  }
+
+  /* Volle Breite für den Inhalt */
+  .col-md-4, .col-md-8 {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .row {
+    display: block !important;
+  }
+
+  /* Bild auf sinnvolle Größe begrenzen */
+  img {
+    max-height: 300px;
+    object-fit: contain;
+  }
+
+  body {
+    margin: 0;
+    font-size: 12pt;
+  }
+}
