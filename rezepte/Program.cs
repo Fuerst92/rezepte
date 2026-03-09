@@ -4,13 +4,29 @@ using rezepte.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Railway PORT
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 builder.Services.AddRazorPages();
 
 builder.Services.AddHttpClient<YouTubeService>();
 builder.Services.AddHttpClient<GeminiService>();
 
+// Datenbankpfad: lokal normal, auf Railway in /data/
+string dbPath;
+if (Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT") != null)
+{
+    Directory.CreateDirectory("/data");
+    dbPath = "/data/rezepte.db";
+}
+else
+{
+    dbPath = "rezepte.db";
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite($"Data Source={dbPath}"));
 
 var app = builder.Build();
 
@@ -24,10 +40,10 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Railway übernimmt HTTPS selbst
+// app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.MapRazorPages();

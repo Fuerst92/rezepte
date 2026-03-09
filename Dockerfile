@@ -1,11 +1,11 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY rezepte.csproj .
-RUN dotnet restore rezepte.csproj
+COPY rezepte/rezepte.csproj rezepte/
+RUN dotnet restore rezepte/rezepte.csproj
 COPY . .
-RUN dotnet publish rezepte.csproj -c Release -o /app/publish
+RUN dotnet publish rezepte/rezepte.csproj -c Release -o /app/publish
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 8080
