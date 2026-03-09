@@ -87,6 +87,14 @@ public class IndexModel : PageModel
     [BindProperty]
     public string NewCategoryColor { get; set; } = "#6c757d";
 
+    // Felder für das Bearbeiten-Formular
+    [BindProperty]
+    public int EditCategoryId { get; set; }
+    [BindProperty]
+    public string EditCategoryName { get; set; } = "";
+    [BindProperty]
+    public string EditCategoryColor { get; set; } = "#6c757d";
+
     /*
      * Statusmeldungen für den Benutzer:
      *   ErrorMessage   = Fehlermeldung (z.B. "Kategorie existiert bereits")
@@ -192,6 +200,36 @@ public class IndexModel : PageModel
      * Sicherheitscheck: Wir prüfen ob noch Rezepte in dieser Kategorie sind.
      * Eine Kategorie mit Rezepten zu löschen würde diese "verwaisen" lassen.
      */
+    // Kategorie bearbeiten
+    public IActionResult OnPostEdit()
+    {
+        if (string.IsNullOrWhiteSpace(EditCategoryName))
+        {
+            ErrorMessage = "Bitte einen Namen eingeben.";
+            LoadCategories();
+            return Page();
+        }
+
+        var category = _db.Categories.Find(EditCategoryId);
+        if (category == null) return NotFound();
+
+        // Prüfen ob der neue Name schon von einer ANDEREN Kategorie verwendet wird
+        if (_db.Categories.Any(c => c.Name == EditCategoryName.Trim() && c.Id != EditCategoryId))
+        {
+            ErrorMessage = $"Die Kategorie \"{EditCategoryName}\" existiert bereits.";
+            LoadCategories();
+            return Page();
+        }
+
+        category.Name  = EditCategoryName.Trim();
+        category.Color = EditCategoryColor;
+        _db.SaveChanges();
+
+        SuccessMessage = $"Kategorie \"{category.Name}\" wurde aktualisiert!";
+        LoadCategories();
+        return Page();
+    }
+
     // Kategorie löschen
     public IActionResult OnPostDelete(int id)
     {

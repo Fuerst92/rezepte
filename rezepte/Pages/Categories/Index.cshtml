@@ -52,12 +52,35 @@
                 <ul class="list-group list-group-flush">
                     @foreach (var category in Model.Categories)
                     {
-                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                            <span class="badge fs-6" style="background-color: @category.Color;">@category.Name</span>
-                            <form method="post" asp-page-handler="Delete"
-                                  onsubmit="return confirm('Kategorie @category.Name wirklich löschen?')">
-                                <input type="hidden" name="id" value="@category.Id" />
-                                <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
+                        <li class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge fs-6" style="background-color: @category.Color;">@category.Name</span>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                            onclick="toggleEdit(@category.Id)">✏️</button>
+                                    <form method="post" asp-page-handler="Delete"
+                                          onsubmit="return confirm('Kategorie @category.Name wirklich löschen?')">
+                                        <input type="hidden" name="id" value="@category.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Inline-Bearbeiten-Formular (standardmäßig versteckt) -->
+                            <form method="post" asp-page-handler="Edit"
+                                  id="edit-form-@category.Id" class="mt-2" style="display:none;">
+                                <input type="hidden" name="EditCategoryId" value="@category.Id" />
+                                <div class="input-group">
+                                    <input type="color" name="EditCategoryColor"
+                                           value="@category.Color"
+                                           class="form-control form-control-color" style="max-width:50px;" />
+                                    <input type="text" name="EditCategoryName"
+                                           value="@category.Name"
+                                           class="form-control" />
+                                    <button type="submit" class="btn btn-success btn-sm">Speichern</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="toggleEdit(@category.Id)">Abbrechen</button>
+                                </div>
                             </form>
                         </li>
                     }
@@ -70,3 +93,12 @@
         <a asp-page="/Index" class="btn btn-outline-secondary">← Zurück zu Rezepten</a>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function toggleEdit(id) {
+            var form = document.getElementById('edit-form-' + id);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+}
