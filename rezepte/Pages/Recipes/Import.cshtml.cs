@@ -142,7 +142,13 @@ public class ImportModel : PageModel
     // ── Rezept speichern (für beide Tabs) ──
     public async Task<IActionResult> OnPostSaveAsync()
     {
+        if (string.IsNullOrWhiteSpace(Recipe.ImageUrl)) Recipe.ImageUrl = null;
+        if (string.IsNullOrWhiteSpace(Recipe.VideoUrl)) Recipe.VideoUrl = null;
+
         ModelState.Remove("Recipe.Category");
+        ModelState.Remove("Recipe.ImageUrl");
+        ModelState.Remove("Recipe.VideoUrl");
+        TryValidateModel(Recipe);
 
         if (!ModelState.IsValid)
         {
