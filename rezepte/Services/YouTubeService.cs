@@ -6,12 +6,24 @@ public class YouTubeService
 {
     private readonly HttpClient _http;
 
-    // Mehrere Invidious-Server als Backup (kein API-Key nötig!)
-    private readonly string[] _instances =
+    // Invidious + Piped Server (kein API-Key nötig!)
+    private readonly string[] _invidiousInstances =
     {
         "https://inv.nadeko.net",
         "https://invidious.privacyredirect.com",
-        "https://invidious.nerdvpn.de"
+        "https://invidious.nerdvpn.de",
+        "https://iv.melmac.space",
+        "https://invidious.protokolla.fi",
+        "https://inv.tux.pizza",
+        "https://invidious.privacydev.net"
+    };
+
+    // Piped API als zweite Option
+    private readonly string[] _pipedInstances =
+    {
+        "https://pipedapi.kavin.rocks",
+        "https://pipedapi.adminforge.de",
+        "https://pipedapi.reallyaweso.me"
     };
 
     public YouTubeService(HttpClient http)
@@ -59,10 +71,11 @@ public class YouTubeService
         return null;
     }
 
-    // Holt Video-Titel und Beschreibung über Invidious (kein API-Key nötig)
+    // Holt Video-Infos - zuerst Invidious, dann Piped als Fallback
     public async Task<(string Title, string Description, string ThumbnailUrl)?> GetVideoInfoAsync(string videoId)
     {
-        foreach (var server in _instances)
+        // 1. Invidious versuchen
+        foreach (var server in _invidiousInstances)
         {
             try
             {
@@ -78,12 +91,26 @@ public class YouTubeService
 
                 return (title, description, thumbnail);
             }
-            catch
-            {
-                continue; // Nächsten Server versuchen
-            }
+            catch { continue; }
         }
 
-        throw new Exception("Kein Invidious-Server erreichbar. Bitte später nochmal versuchen.");
+        // 2. Piped API als Fallback
+        foreach (var server in _pipedInstances)
+        {
+            try
+            {
+                var response = await _http.GetStringAsync($"{server}/streams/{videoId}");
+                using var doc = JsonDocument.Parse(response);
+
+                var title = doc.RootElement.GetProperty("title").GetString() ?? "";
+                var description = doc.RootElement.GetProperty("description").GetString() ?? "";
+                var thumbnail = doc.RootElement.GetProperty("thumbnailUrl").GetString() ?? "";
+
+                return (title, description, thumbnail);
+            }
+            catch { continue; }
+        }
+
+        throw new Exception("Video-Infos konnten nicht abgerufen werden. Bitte später nochmal versuchen.");
     }
 }
