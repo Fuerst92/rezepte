@@ -35,6 +35,8 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     context.Database.EnsureCreated();
     SeedData.Initialize(context);
+    // Neue Spalten zur bestehenden DB hinzufügen (falls noch nicht vorhanden)
+    try { context.Database.ExecuteSqlRaw("ALTER TABLE Categories ADD COLUMN Color TEXT NOT NULL DEFAULT '#6c757d'"); } catch { }
 }
 
 if (!app.Environment.IsDevelopment())

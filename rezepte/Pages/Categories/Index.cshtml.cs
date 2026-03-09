@@ -19,6 +19,9 @@ public class IndexModel : PageModel
     [BindProperty]
     public string NewCategoryName { get; set; } = "";
 
+    [BindProperty]
+    public string NewCategoryColor { get; set; } = "#6c757d";
+
     public string? ErrorMessage { get; set; }
     public string? SuccessMessage { get; set; }
 
@@ -44,7 +47,7 @@ public class IndexModel : PageModel
             return Page();
         }
 
-        _db.Categories.Add(new Category { Name = NewCategoryName.Trim() });
+        _db.Categories.Add(new Category { Name = NewCategoryName.Trim(), Color = NewCategoryColor });
         _db.SaveChanges();
         SuccessMessage = $"Kategorie \"{NewCategoryName.Trim()}\" wurde erstellt!";
         LoadCategories();

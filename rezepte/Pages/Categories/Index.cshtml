@@ -28,6 +28,8 @@
             <h5 class="fw-bold mb-3">Neue Kategorie erstellen</h5>
             <form method="post" asp-page-handler="Add">
                 <div class="input-group">
+                    <input asp-for="NewCategoryColor" type="color" class="form-control form-control-color"
+                           style="max-width:50px;" title="Farbe wählen" />
                     <input asp-for="NewCategoryName" class="form-control"
                            placeholder="z.B. Mexikanisch, Frühstück, Grillen..." />
                     <button type="submit" class="btn btn-success px-4">+ Hinzufügen</button>
@@ -51,7 +53,7 @@
                     @foreach (var category in Model.Categories)
                     {
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                            <span class="badge bg-success bg-opacity-75 fs-6">@category.Name</span>
+                            <span class="badge fs-6" style="background-color: @category.Color;">@category.Name</span>
                             <form method="post" asp-page-handler="Delete"
                                   onsubmit="return confirm('Kategorie @category.Name wirklich löschen?')">
                                 <input type="hidden" name="id" value="@category.Id" />

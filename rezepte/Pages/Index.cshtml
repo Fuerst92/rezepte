@@ -32,8 +32,10 @@
         </a>
         @foreach (var category in Model.Categories)
         {
+            var isActive = Model.SelectedCategoryId == category.Id;
             <a asp-page="/Index" asp-route-selectedCategoryId="@category.Id"
-               class="filter-pill @(Model.SelectedCategoryId == category.Id ? "active" : "")">
+               class="filter-pill @(isActive ? "active" : "")"
+               style="@(isActive ? $"background-color:{category.Color}; border-color:{category.Color}; color:#fff;" : $"border-color:{category.Color}; color:{category.Color};")">
                 @category.Name
             </a>
         }
@@ -72,7 +74,7 @@
                     </div>
                     <div class="col-md-6 d-flex align-items-center">
                         <div style="padding: 40px 48px;">
-                            <span style="font-size:0.68rem; letter-spacing:2.5px; text-transform:uppercase; color:var(--accent); font-weight:700; display:block; margin-bottom:10px;">
+                            <span style="font-size:0.68rem; letter-spacing:2.5px; text-transform:uppercase; color:@featured.Category.Color; font-weight:700; display:block; margin-bottom:10px;">
                                 @featured.Category.Name
                             </span>
                             <h2 style="font-family:'Playfair Display',serif; font-size:1.9rem; line-height:1.25; margin-bottom:14px;">
@@ -119,7 +121,7 @@
                                 </div>
                             </a>
                             <div class="card-meta">
-                                <span class="category-label">@recipe.Category.Name</span>
+                                <span class="category-label" style="color:@recipe.Category.Color;">@recipe.Category.Name</span>
                                 <div class="card-title">
                                     <a asp-page="/Recipes/Detail" asp-route-id="@recipe.Id"
                                        style="text-decoration:none; color:inherit;">

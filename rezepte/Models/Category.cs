@@ -11,5 +11,8 @@ public class Category
     [Display(Name = "Kategorie")]
     public string Name { get; set; } = string.Empty;
 
+    [StringLength(20)]
+    public string Color { get; set; } = "#6c757d";
+
     public List<Recipe> Recipes { get; set; } = new();
 }
