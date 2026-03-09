@@ -1,0 +1,5 @@
+[phases.build]
+cmds = ["dotnet publish rezepte.csproj -c Release -o out"]
+
+[start]
+cmd = "dotnet out/rezepte.dll"
