@@ -12,7 +12,7 @@ public class Recipe
     public string Title { get; set; } = string.Empty;
 
     [Display(Name = "Beschreibung")]
-    [StringLength(500)]
+    [StringLength(2000)]
     public string Description { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Zutaten sind erforderlich")]

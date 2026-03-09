@@ -144,16 +144,21 @@ public class ImportModel : PageModel
     {
         if (string.IsNullOrWhiteSpace(Recipe.ImageUrl)) Recipe.ImageUrl = null;
         if (string.IsNullOrWhiteSpace(Recipe.VideoUrl)) Recipe.VideoUrl = null;
+        if (string.IsNullOrWhiteSpace(Recipe.Description)) Recipe.Description = string.Empty;
 
-        ModelState.Remove("Recipe.Category");
-        ModelState.Remove("Recipe.ImageUrl");
-        ModelState.Remove("Recipe.VideoUrl");
-        TryValidateModel(Recipe);
+        // Felder aus ModelState entfernen die beim Import nicht relevant sind
+        foreach (var key in ModelState.Keys.ToList())
+        {
+            if (key.StartsWith("Recipe.") &&
+                (key == "Recipe.Category" || key == "Recipe.ImageUrl" || key == "Recipe.VideoUrl"))
+                ModelState.Remove(key);
+        }
 
         if (!ModelState.IsValid)
         {
             LoadCategories();
             RecipeLoaded = true;
+            ActiveTab = "youtube";
             return Page();
         }
 
