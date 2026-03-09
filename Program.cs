@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using rezepte.Data;
+using rezepte.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,8 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 builder.Services.AddRazorPages();
+builder.Services.AddHttpClient<YouTubeService>();
+builder.Services.AddHttpClient<GeminiService>();
 
 // Datenbankpfad bestimmen
 string dbPath;

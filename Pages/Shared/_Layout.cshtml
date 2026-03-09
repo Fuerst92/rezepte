@@ -3,28 +3,468 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Meine Rezepte</title>
+    <title>@ViewData["Title"] – Meine Rezepte</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Lato:wght@300;400;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <style>
+
+        /* ─── Reset & Base ─── */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --ink:     #1c1c1c;
+            --muted:   #7a7670;
+            --warm-bg: #f9f7f4;
+            --card-bg: #ffffff;
+            --border:  #e4dfd8;
+            --accent:  #b64d1f;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            font-weight: 400;
+            background: var(--warm-bg);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        a { color: inherit; }
+        a:hover { color: var(--accent); }
+
+        /* ─── Navbar ─── */
+        .site-header {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .site-header .top-bar {
+            text-align: center;
+            padding: 28px 0 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .site-header .site-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ink);
+            text-decoration: none;
+            letter-spacing: 0;
+        }
+
+        .site-header .site-title span {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        .site-header .site-tagline {
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .main-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            padding: 0;
+            list-style: none;
+            margin: 0;
+            flex-wrap: wrap;
+        }
+
+        .main-nav a {
+            display: block;
+            padding: 12px 20px;
+            font-size: 0.78rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--ink);
+            text-decoration: none;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .main-nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 20px; right: 20px;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.2s;
+        }
+
+        .main-nav a:hover { color: var(--accent); }
+        .main-nav a:hover::after { transform: scaleX(1); }
+
+        .main-nav .nav-new a {
+            background: var(--accent);
+            color: #fff;
+            border-radius: 2px;
+            margin-left: 12px;
+        }
+
+        .main-nav .nav-new a:hover { background: #9a3e16; color: #fff; }
+        .main-nav .nav-new a::after { display: none; }
+
+        /* Mobile nav */
+        .mobile-nav-toggle {
+            display: none;
+            background: none;
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            color: var(--ink);
+        }
+
+        @@media (max-width: 768px) {
+            .mobile-nav-toggle { display: block; }
+            .main-nav { display: none; flex-direction: column; padding-bottom: 8px; }
+            .main-nav.open { display: flex; }
+            .main-nav .nav-new a { margin: 4px 20px 0; }
+        }
+
+        /* ─── Cards ─── */
+        .card {
+            border: none;
+            border-radius: 0;
+            background: var(--card-bg);
+            box-shadow: none;
+            transition: none;
+            overflow: hidden;
+        }
+
+        .recipe-card {
+            position: relative;
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .recipe-card .img-wrap {
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            background: #ede9e3;
+        }
+
+        .recipe-card .img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+
+        .recipe-card:hover .img-wrap img {
+            transform: scale(1.04);
+        }
+
+        .recipe-card .img-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #c8c0b4;
+        }
+
+        .recipe-card .card-meta {
+            padding: 16px 0 0;
+        }
+
+        .recipe-card .category-label {
+            font-size: 0.68rem;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--accent);
+            font-weight: 700;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .recipe-card .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.35;
+            color: var(--ink);
+            margin-bottom: 6px;
+        }
+
+        .recipe-card .card-desc {
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .recipe-card .card-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .recipe-card .card-actions .read-more {
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--ink);
+            text-decoration: none;
+        }
+
+        .recipe-card .card-actions .read-more:hover { color: var(--accent); }
+
+        .fav-btn {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .fav-btn:hover, .fav-btn.active { color: #e63950; }
+
+        /* ─── Section Heading ─── */
+        .section-heading {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-heading .label {
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .section-heading h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin: 0;
+        }
+
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .section-divider span {
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* ─── Filter Pills ─── */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 40px;
+        }
+
+        .filter-pill {
+            display: inline-block;
+            padding: 6px 18px;
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: var(--muted);
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .filter-pill:hover {
+            border-color: var(--ink);
+            color: var(--ink);
+        }
+
+        .filter-pill.active {
+            background: var(--ink);
+            border-color: var(--ink);
+            color: #fff;
+        }
+
+        .filter-pill.fav-pill { border-color: #e8c8cc; color: #c0525f; }
+        .filter-pill.fav-pill:hover, .filter-pill.fav-pill.active {
+            background: #e63950;
+            border-color: #e63950;
+            color: #fff;
+        }
+
+        /* ─── Hero ─── */
+        .page-hero {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 40px 0 32px;
+            margin-bottom: 52px;
+            text-align: center;
+        }
+
+        .page-hero h1 {
+            font-size: 2.4rem;
+            margin-bottom: 6px;
+        }
+
+        .page-hero p {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin: 0;
+        }
+
+        /* ─── Buttons ─── */
+        .btn-ink {
+            background: var(--ink);
+            color: #fff;
+            border: none;
+            padding: 10px 28px;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .btn-ink:hover { background: #333; color: #fff; }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 10px 28px;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .btn-accent:hover { background: #9a3e16; color: #fff; }
+
+        .btn-outline-ink {
+            background: transparent;
+            color: var(--ink);
+            border: 1px solid var(--border);
+            padding: 8px 20px;
+            font-size: 0.72rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+
+        .btn-outline-ink:hover {
+            border-color: var(--ink);
+            color: var(--ink);
+        }
+
+        /* Bootstrap overrides */
+        .btn-success { background: var(--accent) !important; border-color: var(--accent) !important; border-radius: 2px; }
+        .btn-primary { background: var(--ink) !important; border-color: var(--ink) !important; border-radius: 2px; }
+        .badge.bg-success { background: var(--accent) !important; }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(182,77,31,0.1);
+        }
+
+        /* ─── Footer ─── */
+        .site-footer {
+            background: var(--ink);
+            color: #888;
+            text-align: center;
+            padding: 40px 0;
+            margin-top: 80px;
+        }
+
+        .site-footer .footer-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .site-footer p { font-size: 0.8rem; margin: 0; }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
-        <div class="container">
-            <a class="navbar-brand fw-bold" asp-page="/Index">🍽️ Meine Rezepte</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" asp-page="/Index">Alle Rezepte</a>
-                <a class="nav-link" asp-page="/Index" asp-route-favoritesOnly="true">⭐ Favoriten</a>
-                <a class="nav-link btn btn-outline-light btn-sm ms-2 px-3" asp-page="/Recipes/Create">+ Neu</a>
-            </div>
-        </div>
-    </nav>
 
-    <main class="pb-5">
+    <header class="site-header">
+        <div class="container">
+            <div class="top-bar">
+                <a class="site-title" asp-page="/Index">Meine <span>Rezepte</span></a>
+                <div class="site-tagline">Deine persönliche Rezeptsammlung</div>
+            </div>
+
+            <button class="mobile-nav-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
+                ☰ MENÜ
+            </button>
+
+            <ul class="main-nav">
+                <li><a asp-page="/Index">Rezepte</a></li>
+                <li><a asp-page="/Index" asp-route-favoritesOnly="true">♥ Favoriten</a></li>
+                <li><a asp-page="/Categories/Index">Kategorien</a></li>
+                <li><a asp-page="/Recipes/Import">YouTube Import</a></li>
+                <li class="nav-new"><a asp-page="/Recipes/Create">+ Neues Rezept</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
         @RenderBody()
     </main>
 
-    <footer class="mt-5 py-3 bg-light text-center text-muted small border-top">
-        Meine Rezeptsammlung
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-title">Meine Rezepte</div>
+            <p>Deine persönliche Rezeptsammlung</p>
+        </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

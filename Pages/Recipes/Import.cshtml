@@ -1,0 +1,250 @@
+@page
+@model rezepte.Pages.Recipes.ImportModel
+@{
+    ViewData["Title"] = "Rezept importieren";
+}
+
+<div class="container mt-4" style="max-width: 750px;">
+
+    <h1 class="mb-1" style="font-family:'Playfair Display',serif;">Rezept importieren</h1>
+    <p style="color:var(--muted);" class="mb-4">Importiere ein Rezept aus YouTube, Instagram oder TikTok.</p>
+
+    @if (Model.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    <!-- Tabs -->
+    <ul class="nav mb-4" style="border-bottom: 2px solid var(--border); gap:0; list-style:none; padding:0; display:flex;">
+        <li>
+            <a href="#" onclick="switchTab('youtube'); return false;" id="tab-youtube"
+               class="tab-btn @(Model.ActiveTab == "youtube" ? "tab-active" : "")">
+                ▶️ YouTube
+            </a>
+        </li>
+        <li>
+            <a href="#" onclick="switchTab('social'); return false;" id="tab-social"
+               class="tab-btn @(Model.ActiveTab == "social" ? "tab-active" : "")">
+                📱 Instagram / TikTok
+            </a>
+        </li>
+    </ul>
+
+    <style>
+        .tab-btn {
+            display: block;
+            padding: 10px 24px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--muted);
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .tab-btn:hover { color: var(--ink); }
+        .tab-active { color: var(--ink) !important; border-bottom-color: var(--accent) !important; }
+        .tab-panel { display: none; }
+        .tab-panel.show { display: block; }
+    </style>
+
+    <!-- ── YouTube Tab ── -->
+    <div id="panel-youtube" class="tab-panel @(Model.ActiveTab == "youtube" ? "show" : "")">
+
+        <div class="card mb-4" style="border:1px solid var(--border); border-radius:8px;">
+            <div class="card-body p-4">
+                <form method="post" asp-page-handler="Analyze" id="ytForm">
+                    <label class="form-label fw-bold" style="font-size:0.85rem; letter-spacing:1px; text-transform:uppercase;">YouTube-Link</label>
+                    <div class="input-group">
+                        <input name="YoutubeUrl" value="@Model.YoutubeUrl" class="form-control"
+                               placeholder="https://www.youtube.com/watch?v=..." />
+                        <button type="submit" id="ytBtn" style="background:var(--accent); color:#fff; border:none; padding:0 20px; font-size:0.8rem; font-weight:700; letter-spacing:1px; cursor:pointer;">
+                            Analysieren
+                        </button>
+                    </div>
+                </form>
+                <div id="ytLoading" class="mt-3 d-none">
+                    <div class="d-flex align-items-center gap-2" style="color:var(--muted);">
+                        <div class="spinner-border spinner-border-sm" style="color:var(--accent);"></div>
+                        <span style="font-size:0.85rem;">KI analysiert das Video... ca. 10–20 Sekunden.</span>
+                    </div>
+                    <div class="progress mt-2" style="height:3px; border-radius:0;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated w-100" style="background:var(--accent);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.RecipeLoaded && Model.ActiveTab == "youtube")
+        {
+            <div class="alert" style="background:#f0faf4; border:1px solid #a3d9b1; color:#2d6a4f;">
+                ✅ KI hat das Rezept extrahiert! Bitte prüfen und ggf. korrigieren.
+            </div>
+
+            @if (Model.VideoId != null)
+            {
+                <div class="ratio ratio-16x9 mb-4">
+                    <iframe src="https://www.youtube.com/embed/@Model.VideoId" allowfullscreen></iframe>
+                </div>
+            }
+
+            <form method="post" asp-page-handler="Save">
+                <input type="hidden" name="YoutubeUrl" value="@Model.YoutubeUrl" />
+                <div class="mb-3">
+                    <label asp-for="Recipe.Title" class="form-label fw-bold"></label>
+                    <input asp-for="Recipe.Title" class="form-control" />
+                    <span asp-validation-for="Recipe.Title" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Recipe.CategoryId" class="form-label fw-bold">Kategorie</label>
+                    <select asp-for="Recipe.CategoryId" asp-items="Model.CategoryOptions" class="form-select">
+                        <option value="">-- Kategorie wählen --</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Recipe.Description" class="form-label fw-bold"></label>
+                    <textarea asp-for="Recipe.Description" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Recipe.Ingredients" class="form-label fw-bold"></label>
+                    <textarea asp-for="Recipe.Ingredients" class="form-control" rows="6"></textarea>
+                    <div class="form-text">Eine Zutat pro Zeile</div>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Recipe.Steps" class="form-label fw-bold"></label>
+                    <textarea asp-for="Recipe.Steps" class="form-control" rows="8"></textarea>
+                    <div class="form-text">Einen Schritt pro Zeile</div>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Recipe.ImageUrl" class="form-label fw-bold">Vorschaubild-URL</label>
+                    <input asp-for="Recipe.ImageUrl" class="form-control" />
+                </div>
+                <input type="hidden" asp-for="Recipe.VideoUrl" />
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn-accent py-2 px-4" style="border:none; cursor:pointer;">💾 Rezept speichern</button>
+                    <a asp-page="/Index" class="btn-outline-ink py-2">Abbrechen</a>
+                </div>
+            </form>
+        }
+    </div>
+
+    <!-- ── Instagram / TikTok Tab ── -->
+    <div id="panel-social" class="tab-panel @(Model.ActiveTab == "social" ? "show" : "")">
+
+        <div class="card mb-4" style="border:1px solid var(--border); border-radius:8px;">
+            <div class="card-body p-4">
+
+                <div class="mb-4 p-3" style="background:#fdf6ec; border:1px solid #f0d9b0; color:#7a5c2e; font-size:0.85rem; border-radius:6px;">
+                    <strong>So geht's:</strong><br>
+                    1. Öffne den Post auf Instagram oder TikTok<br>
+                    2. Öffne den Post → tippe auf <strong>„..."</strong> → <strong>„Link kopieren"</strong> → unten einfügen (optional)<br>
+                    3. Kopiere die <strong>Bildunterschrift / Caption</strong> komplett → ins Textfeld einfügen<br>
+                    4. Klick auf <strong>„Rezept extrahieren"</strong>
+                </div>
+
+                <form method="post" asp-page-handler="AnalyzeSocial" id="socialForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" style="font-size:0.85rem; letter-spacing:1px; text-transform:uppercase;">
+                            Post-Link <span style="font-weight:400; color:var(--muted);">(optional)</span>
+                        </label>
+                        <input name="SocialUrl" value="@Model.SocialUrl" class="form-control"
+                               placeholder="https://www.instagram.com/p/... oder https://www.tiktok.com/@@..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" style="font-size:0.85rem; letter-spacing:1px; text-transform:uppercase;">
+                            Caption / Text des Posts *
+                        </label>
+                        <textarea name="SocialCaption" class="form-control" rows="8"
+                                  placeholder="Füge hier den Text des Posts ein. Z.B.:&#10;&#10;🍝 Spaghetti Carbonara&#10;Zutaten: 200g Spaghetti, 3 Eier...&#10;Zubereitung: ...">@Model.SocialCaption</textarea>
+                        <div class="form-text">Den Text einfach komplett reinkopieren – die KI findet das Rezept darin.</div>
+                    </div>
+                    <button type="submit" id="socialBtn" style="background:var(--accent); color:#fff; border:none; padding:10px 24px; font-size:0.8rem; font-weight:700; letter-spacing:1px; cursor:pointer;">
+                        ✨ Rezept extrahieren
+                    </button>
+                </form>
+
+                <div id="socialLoading" class="mt-3 d-none">
+                    <div class="d-flex align-items-center gap-2" style="color:var(--muted);">
+                        <div class="spinner-border spinner-border-sm" style="color:var(--accent);"></div>
+                        <span style="font-size:0.85rem;">KI liest den Text... ca. 5–10 Sekunden.</span>
+                    </div>
+                    <div class="progress mt-2" style="height:3px; border-radius:0;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated w-100" style="background:var(--accent);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.RecipeLoaded && Model.ActiveTab == "social")
+        {
+            <div class="alert" style="background:#f0faf4; border:1px solid #a3d9b1; color:#2d6a4f;">
+                ✅ KI hat das Rezept extrahiert! Bitte prüfen und ggf. korrigieren.
+            </div>
+
+            <form method="post" asp-page-handler="Save">
+                <input type="hidden" name="SocialUrl" value="@Model.SocialUrl" />
+                <div class="mb-3">
+                    <label asp-for="Recipe.Title" class="form-label fw-bold"></label>
+                    <input asp-for="Recipe.Title" class="form-control" />
+                    <span asp-validation-for="Recipe.Title" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Recipe.CategoryId" class="form-label fw-bold">Kategorie</label>
+                    <select asp-for="Recipe.CategoryId" asp-items="Model.CategoryOptions" class="form-select">
+                        <option value="">-- Kategorie wählen --</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Recipe.Description" class="form-label fw-bold"></label>
+                    <textarea asp-for="Recipe.Description" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Recipe.Ingredients" class="form-label fw-bold"></label>
+                    <textarea asp-for="Recipe.Ingredients" class="form-control" rows="6"></textarea>
+                    <div class="form-text">Eine Zutat pro Zeile</div>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Recipe.Steps" class="form-label fw-bold"></label>
+                    <textarea asp-for="Recipe.Steps" class="form-control" rows="8"></textarea>
+                    <div class="form-text">Einen Schritt pro Zeile</div>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Recipe.ImageUrl" class="form-label fw-bold">Bild-URL (optional)</label>
+                    <input asp-for="Recipe.ImageUrl" class="form-control"
+                           placeholder="https://... Screenshot-URL oder leer lassen" />
+                </div>
+                <input type="hidden" asp-for="Recipe.VideoUrl" />
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn-accent py-2 px-4" style="border:none; cursor:pointer;">💾 Rezept speichern</button>
+                    <a asp-page="/Index" class="btn-outline-ink py-2">Abbrechen</a>
+                </div>
+            </form>
+        }
+    </div>
+
+</div>
+
+@section Scripts {
+<script>
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('show'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+        document.getElementById('panel-' + tab).classList.add('show');
+        document.getElementById('tab-' + tab).classList.add('tab-active');
+    }
+
+    document.getElementById('ytForm').addEventListener('submit', function () {
+        document.getElementById('ytLoading').classList.remove('d-none');
+        document.getElementById('ytBtn').disabled = true;
+        document.getElementById('ytBtn').textContent = 'Analysiere...';
+    });
+
+    document.getElementById('socialForm').addEventListener('submit', function () {
+        document.getElementById('socialLoading').classList.remove('d-none');
+        document.getElementById('socialBtn').disabled = true;
+        document.getElementById('socialBtn').textContent = 'KI arbeitet...';
+    });
+</script>
+}
