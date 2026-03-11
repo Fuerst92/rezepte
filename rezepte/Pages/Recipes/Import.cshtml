@@ -129,6 +129,15 @@
                     <div class="form-text">Einen Schritt pro Zeile</div>
                 </div>
                 <div class="mb-3">
+                    <label asp-for="Recipe.Equipment" class="form-label fw-bold"></label>
+                    <textarea asp-for="Recipe.Equipment" class="form-control" rows="4"></textarea>
+                    <div class="form-text">Ein Gerät / Utensil pro Zeile</div>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Recipe.Servings" class="form-label fw-bold"></label>
+                    <input asp-for="Recipe.Servings" class="form-control" type="number" min="1" max="100" />
+                </div>
+                <div class="mb-3">
                     <label asp-for="Recipe.ImageUrl" class="form-label fw-bold">Vorschaubild-URL</label>
                     <input asp-for="Recipe.ImageUrl" class="form-control" />
                 </div>
