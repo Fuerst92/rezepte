@@ -21,9 +21,19 @@
         </div>
 
         <div class="mb-3">
-            <label asp-for="Recipe.CategoryId" class="form-label fw-bold">Kategorie</label>
-            <select asp-for="Recipe.CategoryId" asp-items="Model.CategoryOptions" class="form-select"></select>
-            <span asp-validation-for="Recipe.CategoryId" class="text-danger small"></span>
+            <label class="form-label fw-bold">Kategorien</label>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var cat in Model.AllCategories)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"
+                               name="SelectedCategoryIds" value="@cat.Id" id="cat_@cat.Id"
+                               @(Model.SelectedCategoryIds.Contains(cat.Id) ? "checked" : "") />
+                        <label class="form-check-label" for="cat_@cat.Id"
+                               style="color:@cat.Color; font-weight:600;">@cat.Name</label>
+                    </div>
+                }
+            </div>
         </div>
 
         <div class="mb-3">

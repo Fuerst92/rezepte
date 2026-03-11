@@ -34,11 +34,11 @@ public class IndexModel : PageModel
         Categories = await _db.Categories.OrderBy(c => c.Name).ToListAsync();
 
         // AsQueryable() = Abfrage wird noch nicht ausgeführt, wir bauen sie erstmal zusammen
-        var query = _db.Recipes.Include(r => r.Category).AsQueryable();
+        var query = _db.Recipes.Include(r => r.Categories).AsQueryable();
 
-        // Filter: Kategorie
+        // Filter: Kategorie (prüft ob Rezept diese Kategorie enthält)
         if (SelectedCategoryId.HasValue)
-            query = query.Where(r => r.CategoryId == SelectedCategoryId.Value);
+            query = query.Where(r => r.Categories.Any(c => c.Id == SelectedCategoryId.Value));
 
         // Filter: Nur Favoriten
         if (FavoritesOnly)

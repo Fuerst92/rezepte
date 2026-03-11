@@ -173,6 +173,26 @@ using (var scope = app.Services.CreateScope())
     try { context.Database.ExecuteSqlRaw("ALTER TABLE Categories ADD COLUMN Color TEXT NOT NULL DEFAULT '#6c757d'"); } catch { }
     try { context.Database.ExecuteSqlRaw("ALTER TABLE Recipes ADD COLUMN Servings INTEGER NOT NULL DEFAULT 4"); } catch { }
     try { context.Database.ExecuteSqlRaw("ALTER TABLE Recipes ADD COLUMN Equipment TEXT"); } catch { }
+
+    // Zwischentabelle für Viele-zu-viele erstellen
+    try
+    {
+        context.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS RecipeCategories (
+                RecipeId INTEGER NOT NULL,
+                CategoryId INTEGER NOT NULL,
+                PRIMARY KEY (RecipeId, CategoryId)
+            )");
+    } catch { }
+
+    // Bestehende CategoryId-Daten in die neue Zwischentabelle übernehmen
+    try
+    {
+        context.Database.ExecuteSqlRaw(@"
+            INSERT OR IGNORE INTO RecipeCategories (RecipeId, CategoryId)
+            SELECT Id, CategoryId FROM Recipes
+            WHERE CategoryId IS NOT NULL AND CategoryId != 0");
+    } catch { }
 }
 
 /*

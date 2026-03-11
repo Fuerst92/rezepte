@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using rezepte.Data;
 using rezepte.Models;
 
@@ -18,30 +18,35 @@ public class CreateModel : PageModel
     [BindProperty]
     public Recipe Recipe { get; set; } = new();
 
-    public SelectList CategoryOptions { get; set; } = null!;
+    // Alle Kategorien für die Checkboxen
+    public List<Category> AllCategories { get; set; } = new();
+
+    // Die vom Benutzer ausgewählten Kategorie-IDs (aus den Checkboxen)
+    [BindProperty]
+    public List<int> SelectedCategoryIds { get; set; } = new();
 
     public async Task OnGetAsync()
     {
-        CategoryOptions = new SelectList(
-            await Task.Run(() => _db.Categories.OrderBy(c => c.Name).ToList()),
-            "Id", "Name"
-        );
+        AllCategories = await _db.Categories.OrderBy(c => c.Name).ToListAsync();
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
-        ModelState.Remove("Recipe.Category");
+        ModelState.Remove("Recipe.Categories");
 
         if (!ModelState.IsValid)
         {
-            CategoryOptions = new SelectList(
-                _db.Categories.OrderBy(c => c.Name).ToList(),
-                "Id", "Name"
-            );
+            AllCategories = await _db.Categories.OrderBy(c => c.Name).ToListAsync();
             return Page();
         }
 
+        // Ausgewählte Kategorien aus der Datenbank laden und dem Rezept zuweisen
+        var selectedCategories = await _db.Categories
+            .Where(c => SelectedCategoryIds.Contains(c.Id))
+            .ToListAsync();
+
         Recipe.CreatedAt = DateTime.Now;
+        Recipe.Categories = selectedCategories;
         _db.Recipes.Add(Recipe);
         await _db.SaveChangesAsync();
 

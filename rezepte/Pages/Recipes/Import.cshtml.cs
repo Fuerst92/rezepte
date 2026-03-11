@@ -31,7 +31,7 @@
 // using = Bibliotheken einbinden (ohne diese würde der Code die Klassen nicht kennen)
 using Microsoft.AspNetCore.Mvc;           // IActionResult, RedirectToPage, Page usw.
 using Microsoft.AspNetCore.Mvc.RazorPages; // PageModel (Basisklasse für Razor Pages)
-using Microsoft.AspNetCore.Mvc.Rendering; // SelectList (für Dropdown-Menüs)
+using Microsoft.EntityFrameworkCore;      // Include(), ToListAsync() usw.
 using rezepte.Data;                        // AppDbContext (Datenbankzugriff)
 using rezepte.Models;                      // Recipe, Category (Datenmodelle)
 using rezepte.Services;                    // YouTubeService, GeminiService
@@ -135,7 +135,10 @@ public class ImportModel : PageModel
      * Diese Property hat kein [BindProperty], weil sie nur aus der DB geladen wird
      * und kein Formularfeld ist – sie ist nur für das HTML-Template.
      */
-    public SelectList CategoryOptions { get; set; } = null!;
+    public List<Category> AllCategories { get; set; } = new();
+
+    [BindProperty]
+    public List<int> SelectedCategoryIds { get; set; } = new();
 
     /*
      * Statusvariablen für das Template:
@@ -404,9 +407,15 @@ public class ImportModel : PageModel
          *
          * Nach SaveChangesAsync() hat Recipe.Id automatisch einen Wert (von der Datenbank vergeben).
          */
+        // Ausgewählte Kategorien laden und dem Rezept zuweisen
+        var selectedCategories = await _db.Categories
+            .Where(c => SelectedCategoryIds.Contains(c.Id))
+            .ToListAsync();
+
         Recipe.CreatedAt = DateTime.Now;
-        _db.Recipes.Add(Recipe);          // Rezept zum Tracking hinzufügen
-        await _db.SaveChangesAsync();     // SQL INSERT ausführen, ID wird gesetzt
+        Recipe.Categories = selectedCategories;
+        _db.Recipes.Add(Recipe);
+        await _db.SaveChangesAsync();
 
         /*
          * Nach dem Speichern zur Detailseite weiterleiten.
@@ -438,9 +447,6 @@ public class ImportModel : PageModel
      */
     private void LoadCategories()
     {
-        CategoryOptions = new SelectList(
-            _db.Categories.OrderBy(c => c.Name).ToList(),
-            "Id", "Name"
-        );
+        AllCategories = _db.Categories.OrderBy(c => c.Name).ToList();
     }
 }

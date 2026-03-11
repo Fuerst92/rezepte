@@ -342,10 +342,13 @@
             <!-- Meta-Infos -->
             <hr class="recipe-divider">
             <div class="recipe-meta">
-                <div class="recipe-meta-item">
-                    <span class="icon">🏷️</span>
-                    <span>@Model.Recipe.Category.Name</span>
-                </div>
+                @foreach (var cat in Model.Recipe.Categories)
+                {
+                    <div class="recipe-meta-item">
+                        <span class="icon">🏷️</span>
+                        <span style="color:@cat.Color;">@cat.Name</span>
+                    </div>
+                }
                 <div class="recipe-meta-item">
                     <span class="icon">📅</span>
                     <span>@Model.Recipe.CreatedAt.ToString("dd. MMMM yyyy")</span>

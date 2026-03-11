@@ -254,7 +254,7 @@ public class IndexModel : PageModel
          * Kein Rezept soll auf eine nicht-existente Kategorie zeigen.
          */
         // Prüfen ob noch Rezepte in dieser Kategorie sind
-        if (_db.Recipes.Any(r => r.CategoryId == id))
+        if (_db.Recipes.Any(r => r.Categories.Any(c => c.Id == id)))
         {
             ErrorMessage = $"Kategorie \"{category.Name}\" kann nicht gelöscht werden – es gibt noch Rezepte darin.";
             LoadCategories();

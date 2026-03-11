@@ -104,8 +104,8 @@
                     </div>
                     <div class="col-md-6 d-flex align-items-center">
                         <div style="padding: 40px 48px;">
-                            <span style="font-size:0.68rem; letter-spacing:2.5px; text-transform:uppercase; color:@featured.Category.Color; font-weight:700; display:block; margin-bottom:10px;">
-                                @featured.Category.Name
+                            <span style="font-size:0.68rem; letter-spacing:2.5px; text-transform:uppercase; color:@(featured.Categories.FirstOrDefault()?.Color ?? "#6c757d"); font-weight:700; display:block; margin-bottom:10px;">
+                                @string.Join(", ", featured.Categories.Select(c => c.Name))
                             </span>
                             <h2 style="font-family:'Playfair Display',serif; font-size:1.9rem; line-height:1.25; margin-bottom:14px;">
                                 @featured.Title
@@ -151,7 +151,9 @@
                                 </div>
                             </a>
                             <div class="card-meta">
-                                <span class="category-label" style="color:@recipe.Category.Color;">@recipe.Category.Name</span>
+                                <span class="category-label" style="color:@(recipe.Categories.FirstOrDefault()?.Color ?? "#6c757d");">
+                                    @string.Join(", ", recipe.Categories.Select(c => c.Name))
+                                </span>
                                 <div class="card-title">
                                     <a asp-page="/Recipes/Detail" asp-route-id="@recipe.Id"
                                        style="text-decoration:none; color:inherit;">

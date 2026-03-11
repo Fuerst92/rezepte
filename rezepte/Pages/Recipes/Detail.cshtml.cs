@@ -93,7 +93,7 @@ public class DetailModel : PageModel
          * Ergebnis: ein Recipe-Objekt mit geladener Kategorie, oder null
          */
         var recipe = await _db.Recipes
-            .Include(r => r.Category)               // Kategorie mitlesen (JOIN)
+            .Include(r => r.Categories)              // Alle Kategorien mitlesen (JOIN)
             .FirstOrDefaultAsync(r => r.Id == id);  // Erstes Rezept mit dieser ID
 
         /*

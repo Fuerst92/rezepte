@@ -14,9 +14,16 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Viele-zu-viele: Recipe <-> Category
+        // EF erstellt automatisch eine Zwischentabelle "RecipeCategories"
+        // mit den Spalten RecipeId und CategoryId
         modelBuilder.Entity<Recipe>()
-            .HasOne(r => r.Category)
+            .HasMany(r => r.Categories)
             .WithMany(c => c.Recipes)
-            .HasForeignKey(r => r.CategoryId);
+            .UsingEntity<Dictionary<string, object>>(
+                "RecipeCategories",
+                j => j.HasOne<Category>().WithMany().HasForeignKey("CategoryId"),
+                j => j.HasOne<Recipe>().WithMany().HasForeignKey("RecipeId")
+            );
     }
 }
