@@ -4,10 +4,10 @@
     ViewData["Title"] = "Kategorien";
 }
 
-<div class="hero">
+<div class="page-hero">
     <div class="container">
-        <h1>🏷️ Kategorien</h1>
-        <p class="mb-0 opacity-75">Verwalte deine Rezept-Kategorien</p>
+        <h1><i data-lucide="tag" style="width:32px; height:32px; display:inline; vertical-align:middle; margin-right:8px;"></i>Kategorien</h1>
+        <p class="mb-0">Verwalte deine Rezept-Kategorien</p>
     </div>
 </div>
 
@@ -15,11 +15,17 @@
 
     @if (Model.ErrorMessage != null)
     {
-        <div class="alert alert-danger rounded-3">@Model.ErrorMessage</div>
+        <div class="alert alert-danger rounded-3 d-flex align-items-center gap-2">
+            <i data-lucide="alert-circle" style="width:18px; height:18px; flex-shrink:0;"></i>
+            @Model.ErrorMessage
+        </div>
     }
     @if (Model.SuccessMessage != null)
     {
-        <div class="alert alert-success rounded-3">✅ @Model.SuccessMessage</div>
+        <div class="alert alert-success rounded-3 d-flex align-items-center gap-2">
+            <i data-lucide="check-circle" style="width:18px; height:18px; flex-shrink:0;"></i>
+            @Model.SuccessMessage
+        </div>
     }
 
     <!-- Neue Kategorie -->
@@ -29,10 +35,12 @@
             <form method="post" asp-page-handler="Add">
                 <div class="input-group">
                     <input asp-for="NewCategoryColor" type="color" class="form-control form-control-color"
-                           style="max-width:50px;" title="Farbe wählen" />
+                           style="max-width:50px;" title="Farbe wählen" aria-label="Kategorie-Farbe wählen" />
                     <input asp-for="NewCategoryName" class="form-control"
-                           placeholder="z.B. Mexikanisch, Frühstück, Grillen..." />
-                    <button type="submit" class="btn btn-success px-4">+ Hinzufügen</button>
+                           placeholder="z.B. Mexikanisch, Frühstück, Grillen..." aria-label="Kategorie-Name" />
+                    <button type="submit" class="btn btn-success px-4">
+                        <i data-lucide="plus" style="width:16px; height:16px;"></i> Hinzufügen
+                    </button>
                 </div>
             </form>
         </div>
@@ -57,26 +65,32 @@
                                 <span class="badge fs-6" style="background-color: @category.Color;">@category.Name</span>
                                 <div class="d-flex gap-2">
                                     <button type="button" class="btn btn-sm btn-outline-secondary"
-                                            onclick="toggleEdit(@category.Id)">✏️</button>
+                                            onclick="toggleEdit(@category.Id)" aria-label="@category.Name bearbeiten">
+                                        <i data-lucide="pencil" style="width:14px; height:14px;"></i>
+                                    </button>
                                     <form method="post" asp-page-handler="Delete"
                                           onsubmit="return confirm('Kategorie @category.Name wirklich löschen?')">
                                         <input type="hidden" name="id" value="@category.Id" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                aria-label="@category.Name löschen">
+                                            <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
+                                        </button>
                                     </form>
                                 </div>
                             </div>
 
-                            <!-- Inline-Bearbeiten-Formular (standardmäßig versteckt) -->
+                            <!-- Inline-Bearbeiten -->
                             <form method="post" asp-page-handler="Edit"
                                   id="edit-form-@category.Id" class="mt-2" style="display:none;">
                                 <input type="hidden" name="EditCategoryId" value="@category.Id" />
                                 <div class="input-group">
                                     <input type="color" name="EditCategoryColor"
                                            value="@category.Color"
-                                           class="form-control form-control-color" style="max-width:50px;" />
+                                           class="form-control form-control-color" style="max-width:50px;"
+                                           aria-label="Farbe ändern" />
                                     <input type="text" name="EditCategoryName"
                                            value="@category.Name"
-                                           class="form-control" />
+                                           class="form-control" aria-label="Name ändern" />
                                     <button type="submit" class="btn btn-success btn-sm">Speichern</button>
                                     <button type="button" class="btn btn-outline-secondary btn-sm"
                                             onclick="toggleEdit(@category.Id)">Abbrechen</button>
@@ -90,7 +104,9 @@
     </div>
 
     <div class="mt-3">
-        <a asp-page="/Index" class="btn btn-outline-secondary">← Zurück zu Rezepten</a>
+        <a asp-page="/Index" class="btn-outline-ink">
+            <i data-lucide="arrow-left" style="width:14px; height:14px;"></i> Zurück zu Rezepten
+        </a>
     </div>
 </div>
 

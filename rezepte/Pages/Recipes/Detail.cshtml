@@ -43,7 +43,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 5rem;
+        color: #c8c0b4;
     }
 
     .recipe-body {
@@ -137,8 +137,9 @@
         display: flex;
         justify-content: center;
         gap: 40px;
-        font-size: 0.85rem;
+        font-size: 0.875rem;
         color: #6b7280;
+        flex-wrap: wrap;
     }
 
     .recipe-meta-item {
@@ -148,7 +149,10 @@
     }
 
     .recipe-meta-item .icon {
-        font-size: 1.1rem;
+        width: 16px;
+        height: 16px;
+        stroke-width: 2;
+        color: var(--muted);
     }
 
     .recipe-actions {
@@ -158,6 +162,20 @@
         align-items: center;
         gap: 8px;
         padding: 0 4px;
+        flex-wrap: wrap;
+    }
+
+    .recipe-actions .btn {
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .recipe-actions .btn .icon {
+        width: 14px;
+        height: 14px;
+        stroke-width: 2;
     }
 
     .portions-bar {
@@ -172,11 +190,20 @@
 
     .portions-label {
         font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .portions-label .icon {
+        width: 18px;
+        height: 18px;
+        stroke-width: 2;
     }
 
     .portions-btn {
-        width: 30px;
-        height: 30px;
+        width: 44px;
+        height: 44px;
         border: 1px solid #d1d5db;
         border-radius: 50%;
         background: #fff;
@@ -186,10 +213,16 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: background 0.15s ease, border-color 0.15s ease;
     }
 
     .portions-btn:hover {
         background: #f3f4f6;
+        border-color: var(--ink);
+    }
+
+    .portions-btn:active {
+        transform: scale(0.95);
     }
 
     #portions-input {
@@ -218,18 +251,20 @@
         border-bottom: 1px solid #f3f4f6;
     }
 
-    /* ── Druckansicht ──
-     * Diese Styles gelten NUR wenn die Seite gedruckt wird.
-     * Der Browser blendet alles mit display:none aus, bevor er druckt.
-     * So wird ein sauberes, aufgeräumtes Druckbild erzeugt.
-     */
+    .equipment-item .icon {
+        width: 16px;
+        height: 16px;
+        stroke-width: 2;
+        color: var(--muted);
+        flex-shrink: 0;
+    }
+
     @@media print {
-        /* Navigation und Footer ausblenden */
         .site-header,
         .site-footer,
-        .recipe-actions { display: none !important; }
+        .recipe-actions,
+        .portions-bar { display: none !important; }
 
-        /* Hintergrundfarbe weiß, kein Schatten, kein Rand für Druck */
         body { background: white !important; }
         .recipe-card {
             box-shadow: none !important;
@@ -238,51 +273,62 @@
             margin: 0 !important;
         }
 
-        /* Bild beim Druck auf max. halbe Seite begrenzen */
         .recipe-hero { height: 200px !important; }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .portions-btn:active { transform: none; }
     }
 </style>
 
 <div class="container-fluid px-3">
 
-    <!-- Aktions-Leiste oben -->
+    <!-- Aktions-Leiste -->
     <div class="recipe-actions">
-        <a asp-page="/Index" class="btn btn-sm btn-outline-secondary">← Zurück</a>
-        <a asp-page="/Recipes/Edit" asp-route-id="@Model.Recipe.Id" class="btn btn-sm btn-outline-secondary">✏️ Bearbeiten</a>
+        <a asp-page="/Index" class="btn btn-sm btn-outline-secondary">
+            <i data-lucide="arrow-left" class="icon"></i> Zurück
+        </a>
+        <a asp-page="/Recipes/Edit" asp-route-id="@Model.Recipe.Id" class="btn btn-sm btn-outline-secondary">
+            <i data-lucide="pencil" class="icon"></i> Bearbeiten
+        </a>
 
         <form method="post" asp-page-handler="ToggleFavorite" class="mb-0">
             <input type="hidden" name="id" value="@Model.Recipe.Id" />
-            <button class="btn btn-sm @(Model.Recipe.IsFavorite ? "btn-warning" : "btn-outline-warning")">
-                @(Model.Recipe.IsFavorite ? "👑 Favorit" : "♡ Favorit")
+            <button class="btn btn-sm @(Model.Recipe.IsFavorite ? "btn-warning" : "btn-outline-warning")"
+                    aria-label="@(Model.Recipe.IsFavorite ? "Von Favoriten entfernen" : "Zu Favoriten hinzufügen")">
+                <i data-lucide="crown" class="icon"></i> Favorit
             </button>
         </form>
 
-        <!-- onclick="window.print()" ruft die Druckfunktion des Browsers auf -->
-        <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">🖨️ Drucken</button>
+        <button onclick="window.print()" class="btn btn-sm btn-outline-secondary" aria-label="Rezept drucken">
+            <i data-lucide="printer" class="icon"></i> Drucken
+        </button>
 
         <form method="post" asp-page-handler="Delete" class="mb-0 ms-auto"
               onsubmit="return confirm('Rezept wirklich löschen?')">
             <input type="hidden" name="id" value="@Model.Recipe.Id" />
-            <button class="btn btn-sm btn-outline-danger">🗑️ Löschen</button>
+            <button class="btn btn-sm btn-outline-danger" aria-label="Rezept löschen">
+                <i data-lucide="trash-2" class="icon"></i> Löschen
+            </button>
         </form>
     </div>
 
     <!-- Rezept-Karte -->
     <div class="recipe-card">
 
-        <!-- Bild -->
         @if (!string.IsNullOrEmpty(Model.Recipe.ImageUrl))
         {
-            <img src="@Model.Recipe.ImageUrl" class="recipe-hero" alt="@Model.Recipe.Title">
+            <img src="@Model.Recipe.ImageUrl" class="recipe-hero" alt="@Model.Recipe.Title" loading="eager">
         }
         else
         {
-            <div class="recipe-hero-placeholder">🍴</div>
+            <div class="recipe-hero-placeholder">
+                <i data-lucide="utensils-crossed" style="width:64px; height:64px; stroke-width:1;"></i>
+            </div>
         }
 
         <div class="recipe-body">
 
-            <!-- Titel & Beschreibung -->
             <h1 class="recipe-title">@Model.Recipe.Title</h1>
             @if (!string.IsNullOrEmpty(Model.Recipe.Description))
             {
@@ -293,14 +339,15 @@
 
             <!-- Portionsrechner -->
             <div class="portions-bar">
-                <span class="portions-label">🍽️ Portionen:</span>
-                <button class="portions-btn" onclick="changePortions(-1)">−</button>
+                <span class="portions-label">
+                    <i data-lucide="cooking-pot" class="icon"></i> Portionen:
+                </span>
+                <button class="portions-btn" onclick="changePortions(-1)" aria-label="Portion verringern">−</button>
                 <input type="number" id="portions-input" value="@Model.Recipe.Servings"
-                       min="1" max="100" oninput="updateIngredients()" />
-                <button class="portions-btn" onclick="changePortions(1)">+</button>
+                       min="1" max="100" oninput="updateIngredients()" aria-label="Anzahl Portionen" />
+                <button class="portions-btn" onclick="changePortions(1)" aria-label="Portion erhöhen">+</button>
             </div>
 
-            <!-- Zutaten -->
             <h2 class="section-header">Zutaten</h2>
             <div class="ingredients-grid" id="ingredients-grid">
                 @foreach (var ingredient in ingredients)
@@ -311,7 +358,6 @@
 
             <hr class="recipe-divider">
 
-            <!-- Zubereitung -->
             <h2 class="section-header">Zubereitung</h2>
             <ol class="steps-list">
                 @for (int i = 0; i < steps.Count; i++)
@@ -323,7 +369,6 @@
                 }
             </ol>
 
-            <!-- Materialliste -->
             @if (equipmentList.Any())
             {
                 <hr class="recipe-divider">
@@ -332,32 +377,31 @@
                     @foreach (var item in equipmentList)
                     {
                         <div class="equipment-item">
-                            <span class="equipment-icon">🔪</span>
+                            <i data-lucide="chef-hat" class="icon"></i>
                             <span>@item</span>
                         </div>
                     }
                 </div>
             }
 
-            <!-- Meta-Infos -->
             <hr class="recipe-divider">
             <div class="recipe-meta">
                 @foreach (var cat in Model.Recipe.Categories)
                 {
                     <div class="recipe-meta-item">
-                        <span class="icon">🏷️</span>
+                        <i data-lucide="tag" class="icon"></i>
                         <span style="color:@cat.Color;">@cat.Name</span>
                     </div>
                 }
                 <div class="recipe-meta-item">
-                    <span class="icon">📅</span>
+                    <i data-lucide="calendar" class="icon"></i>
                     <span>@Model.Recipe.CreatedAt.ToString("dd. MMMM yyyy")</span>
                 </div>
                 @if (!string.IsNullOrEmpty(Model.Recipe.VideoUrl))
                 {
                     <div class="recipe-meta-item">
-                        <a href="@Model.Recipe.VideoUrl" target="_blank" class="text-danger text-decoration-none">
-                            <span class="icon">▶️</span> Video ansehen
+                        <a href="@Model.Recipe.VideoUrl" target="_blank" rel="noopener" class="text-danger text-decoration-none d-flex align-items-center gap-1">
+                            <i data-lucide="play-circle" class="icon"></i> Video ansehen
                         </a>
                     </div>
                 }
@@ -388,7 +432,6 @@
         });
     }
 
-    // Zahlen in einem Zutaten-Text skalieren (z.B. "200g Mehl" → "400g Mehl")
     function scaleIngredient(text, factor) {
         return text.replace(/\d+([.,]\d+)?/g, match => {
             const num = parseFloat(match.replace(',', '.')) * factor;

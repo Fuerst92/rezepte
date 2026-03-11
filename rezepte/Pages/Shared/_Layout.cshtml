@@ -6,6 +6,8 @@
     <title>@ViewData["Title"] – Meine Fürstlichen Rezepte</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Lato:wght@300;400;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons statt Emojis (UI/UX Pro Max: no-emoji-icons) -->
+    <link href="https://unpkg.com/lucide-static@latest/font/lucide.css" rel="stylesheet">
     <style>
 
         /* ─── Reset & Base ─── */
@@ -18,14 +20,20 @@
             --card-bg: #ffffff;
             --border:  #e4dfd8;
             --accent:  #b64d1f;
+            --accent-hover: #9a3e16;
+            --danger:  #e63950;
+            --success: #2d6a4f;
+            --focus-ring: rgba(182, 77, 31, 0.35);
         }
 
         body {
             font-family: 'Lato', sans-serif;
             font-weight: 400;
-            background: var(--warm-bg);
             color: var(--ink);
             -webkit-font-smoothing: antialiased;
+            /* Subtle grain texture (Frontend Design: Backgrounds & Texture) */
+            background-color: var(--warm-bg);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
         }
 
         h1, h2, h3, h4, h5 {
@@ -34,6 +42,21 @@
 
         a { color: inherit; }
         a:hover { color: var(--accent); }
+
+        /* ─── Global Focus States (UI/UX Pro Max: focus-states, keyboard-nav) ─── */
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        a:focus-visible,
+        button:focus-visible,
+        .filter-pill:focus-visible,
+        .fav-btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
 
         /* ─── Navbar ─── */
         .site-header {
@@ -81,8 +104,10 @@
         }
 
         .main-nav a {
-            display: block;
-            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 14px 20px;
             font-size: 0.78rem;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -90,7 +115,13 @@
             color: var(--ink);
             text-decoration: none;
             position: relative;
-            transition: color 0.2s;
+            transition: color 0.2s ease;
+        }
+
+        .main-nav a .icon {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2;
         }
 
         .main-nav a::after {
@@ -100,11 +131,19 @@
             height: 2px;
             background: var(--accent);
             transform: scaleX(0);
-            transition: transform 0.2s;
+            transition: transform 0.2s ease;
         }
 
         .main-nav a:hover { color: var(--accent); }
         .main-nav a:hover::after { transform: scaleX(1); }
+
+        /* Active nav state (UI/UX Pro Max: nav-state-active) */
+        .main-nav a.nav-active {
+            color: var(--accent);
+        }
+        .main-nav a.nav-active::after {
+            transform: scaleX(1);
+        }
 
         .main-nav .nav-new a {
             background: var(--accent);
@@ -113,23 +152,30 @@
             margin-left: 12px;
         }
 
-        .main-nav .nav-new a:hover { background: #9a3e16; color: #fff; }
+        .main-nav .nav-new a:hover { background: var(--accent-hover); color: #fff; }
+        .main-nav .nav-new a.nav-active { color: #fff; }
         .main-nav .nav-new a::after { display: none; }
 
-        /* Mobile nav */
+        /* Mobile nav toggle (UI/UX Pro Max: touch-target-size 44px min) */
         .mobile-nav-toggle {
             display: none;
             background: none;
             border: 1px solid var(--border);
-            padding: 6px 12px;
+            padding: 10px 16px;
             font-size: 0.8rem;
             letter-spacing: 1px;
             cursor: pointer;
             color: var(--ink);
+            min-height: 44px;
+            transition: border-color 0.2s ease;
+        }
+
+        .mobile-nav-toggle:hover {
+            border-color: var(--ink);
         }
 
         @@media (max-width: 768px) {
-            .mobile-nav-toggle { display: block; }
+            .mobile-nav-toggle { display: flex; align-items: center; gap: 8px; }
             .main-nav { display: none; flex-direction: column; padding-bottom: 8px; }
             .main-nav.open { display: flex; }
             .main-nav .nav-new a { margin: 4px 20px 0; }
@@ -141,7 +187,6 @@
             border-radius: 0;
             background: var(--card-bg);
             box-shadow: none;
-            transition: none;
             overflow: hidden;
         }
 
@@ -176,8 +221,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
             color: #c8c0b4;
+        }
+
+        .recipe-card .img-placeholder .icon {
+            width: 48px;
+            height: 48px;
+            stroke-width: 1;
         }
 
         .recipe-card .card-meta {
@@ -185,7 +235,7 @@
         }
 
         .recipe-card .category-label {
-            font-size: 0.68rem;
+            font-size: 0.75rem;
             letter-spacing: 2.5px;
             text-transform: uppercase;
             color: var(--accent);
@@ -204,9 +254,9 @@
         }
 
         .recipe-card .card-desc {
-            font-size: 0.85rem;
+            font-size: 0.875rem;
             color: var(--muted);
-            line-height: 1.5;
+            line-height: 1.6;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -229,22 +279,62 @@
             font-weight: 700;
             color: var(--ink);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s ease, gap 0.2s ease;
         }
 
-        .recipe-card .card-actions .read-more:hover { color: var(--accent); }
+        .recipe-card .card-actions .read-more:hover {
+            color: var(--accent);
+            gap: 10px;
+        }
 
+        .recipe-card .card-actions .read-more .icon {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2.5;
+        }
+
+        /* Favorite button (UI/UX Pro Max: touch-target-size 44px) */
         .fav-btn {
             background: none;
             border: none;
-            font-size: 1.1rem;
             color: var(--muted);
             cursor: pointer;
-            padding: 0;
+            padding: 8px;
+            min-width: 44px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             line-height: 1;
-            transition: color 0.2s;
+            transition: color 0.2s ease, transform 0.15s ease;
+            border-radius: 50%;
         }
 
-        .fav-btn:hover, .fav-btn.active { color: #e63950; }
+        .fav-btn .icon {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+        }
+
+        .fav-btn:hover {
+            color: var(--danger);
+            transform: scale(1.1);
+        }
+
+        .fav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .fav-btn.active {
+            color: var(--danger);
+        }
+
+        .fav-btn.active .icon {
+            fill: var(--danger);
+        }
 
         /* ─── Section Heading ─── */
         .section-heading {
@@ -253,7 +343,7 @@
         }
 
         .section-heading .label {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--muted);
@@ -285,7 +375,7 @@
         }
 
         .section-divider span {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--muted);
@@ -293,7 +383,7 @@
             white-space: nowrap;
         }
 
-        /* ─── Filter Pills ─── */
+        /* ─── Filter Pills (UI/UX Pro Max: touch-target-size, state-transition) ─── */
         .filter-bar {
             display: flex;
             flex-wrap: wrap;
@@ -302,8 +392,10 @@
         }
 
         .filter-pill {
-            display: inline-block;
-            padding: 6px 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
             font-size: 0.75rem;
             letter-spacing: 1.5px;
             text-transform: uppercase;
@@ -311,8 +403,15 @@
             border: 1px solid var(--border);
             text-decoration: none;
             color: var(--muted);
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             background: #fff;
+            min-height: 40px;
+        }
+
+        .filter-pill .icon {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2.5;
         }
 
         .filter-pill:hover {
@@ -328,8 +427,8 @@
 
         .filter-pill.fav-pill { border-color: #e8c8cc; color: #c0525f; }
         .filter-pill.fav-pill:hover, .filter-pill.fav-pill.active {
-            background: #e63950;
-            border-color: #e63950;
+            background: var(--danger);
+            border-color: var(--danger);
             color: #fff;
         }
 
@@ -353,56 +452,78 @@
             margin: 0;
         }
 
-        /* ─── Buttons ─── */
+        /* ─── Buttons (UI/UX Pro Max: touch-target-size, state-transition) ─── */
         .btn-ink {
             background: var(--ink);
             color: #fff;
             border: none;
-            padding: 10px 28px;
+            padding: 12px 28px;
             font-size: 0.75rem;
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: 700;
             text-decoration: none;
-            display: inline-block;
-            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s ease, transform 0.1s ease;
+            min-height: 44px;
+            cursor: pointer;
         }
 
         .btn-ink:hover { background: #333; color: #fff; }
+        .btn-ink:active { transform: scale(0.98); }
 
         .btn-accent {
             background: var(--accent);
             color: #fff;
             border: none;
-            padding: 10px 28px;
+            padding: 12px 28px;
             font-size: 0.75rem;
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: 700;
             text-decoration: none;
-            display: inline-block;
-            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s ease, transform 0.1s ease;
+            min-height: 44px;
+            cursor: pointer;
         }
 
-        .btn-accent:hover { background: #9a3e16; color: #fff; }
+        .btn-accent:hover { background: var(--accent-hover); color: #fff; }
+        .btn-accent:active { transform: scale(0.98); }
 
         .btn-outline-ink {
             background: transparent;
             color: var(--ink);
             border: 1px solid var(--border);
-            padding: 8px 20px;
-            font-size: 0.72rem;
+            padding: 10px 20px;
+            font-size: 0.75rem;
             letter-spacing: 1.5px;
             text-transform: uppercase;
             font-weight: 700;
             text-decoration: none;
-            display: inline-block;
-            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            min-height: 44px;
         }
 
         .btn-outline-ink:hover {
             border-color: var(--ink);
             color: var(--ink);
+        }
+
+        /* Lucide icon sizing in buttons */
+        .btn-ink .icon,
+        .btn-accent .icon,
+        .btn-outline-ink .icon {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2;
         }
 
         /* Bootstrap overrides */
@@ -411,7 +532,36 @@
         .badge.bg-success { background: var(--accent) !important; }
         .form-control:focus, .form-select:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(182,77,31,0.1);
+            box-shadow: 0 0 0 3px var(--focus-ring);
+        }
+
+        /* ─── Staggered Card Animation (Frontend Design: Motion) ─── */
+        .recipe-card-col {
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeInUp 0.4s ease forwards;
+        }
+
+        @@keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ─── Reduced Motion (UI/UX Pro Max: reduced-motion) ─── */
+        @@media (prefers-reduced-motion: reduce) {
+            .recipe-card .img-wrap img { transition: none; }
+            .recipe-card:hover .img-wrap img { transform: none; }
+            .recipe-card-col {
+                opacity: 1;
+                transform: none;
+                animation: none;
+            }
+            .fav-btn:hover { transform: none; }
+            .fav-btn:active { transform: none; }
+            .btn-ink:active, .btn-accent:active { transform: none; }
+            .read-more:hover { gap: 6px !important; }
         }
 
         /* ─── Footer ─── */
@@ -442,16 +592,20 @@
                 <div class="site-tagline">Deine persönliche Rezeptsammlung</div>
             </div>
 
-            <button class="mobile-nav-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
-                ☰ MENÜ
+            <button class="mobile-nav-toggle" onclick="this.nextElementSibling.classList.toggle('open')" aria-label="Navigation öffnen" aria-expanded="false">
+                <i data-lucide="menu" class="icon"></i> MENÜ
             </button>
 
-            <ul class="main-nav">
-                <li><a asp-page="/Index">Rezepte</a></li>
-                <li><a asp-page="/Index" asp-route-favoritesOnly="true">👑 Favoriten</a></li>
-                <li><a asp-page="/Categories/Index">Kategorien</a></li>
-                <li><a asp-page="/Recipes/Import">YouTube Import</a></li>
-                <li class="nav-new"><a asp-page="/Recipes/Create">+ Neues Rezept</a></li>
+            @{
+                var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+                var isFav = ViewContext.HttpContext.Request.Query.ContainsKey("favoritesOnly");
+            }
+            <ul class="main-nav" role="navigation" aria-label="Hauptnavigation">
+                <li><a asp-page="/Index" class="@(currentPage == "/Index" && !isFav ? "nav-active" : "")"><i data-lucide="book-open" class="icon"></i> Rezepte</a></li>
+                <li><a asp-page="/Index" asp-route-favoritesOnly="true" class="@(isFav ? "nav-active" : "")"><i data-lucide="crown" class="icon"></i> Favoriten</a></li>
+                <li><a asp-page="/Categories/Index" class="@(currentPage == "/Categories/Index" ? "nav-active" : "")"><i data-lucide="tag" class="icon"></i> Kategorien</a></li>
+                <li><a asp-page="/Recipes/Import" class="@(currentPage == "/Recipes/Import" ? "nav-active" : "")"><i data-lucide="download" class="icon"></i> Import</a></li>
+                <li class="nav-new"><a asp-page="/Recipes/Create" class="@(currentPage == "/Recipes/Create" ? "nav-active" : "")"><i data-lucide="plus" class="icon"></i> Neues Rezept</a></li>
             </ul>
         </div>
     </header>
@@ -468,6 +622,9 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Lucide Icons init -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script>lucide.createIcons();</script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

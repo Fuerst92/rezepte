@@ -17,6 +17,7 @@
 // "using" bedeutet: wir wollen Code aus einer anderen Bibliothek benutzen.
 // Ohne "using" müsste man den vollen Namen tippen, z.B.:
 // Microsoft.EntityFrameworkCore.DbContextOptionsBuilder statt einfach DbContextOptionsBuilder
+using Microsoft.AspNetCore.DataProtection; // Für persistente Antiforgery-Keys
 using Microsoft.EntityFrameworkCore;  // Für die Datenbankverbindung (EF Core)
 using rezepte.Data;                   // Unsere eigene Datenbankklasse (AppDbContext)
 using rezepte.Services;               // Unsere eigenen Service-Klassen (YouTube, Gemini)
@@ -43,6 +44,27 @@ var builder = WebApplication.CreateBuilder(args);
  */
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 
+/*
+ * ── DATAPROTECTION-KEYS PERSISTIEREN (NUR AUF RAILWAY) ──
+ *
+ * Das Problem ohne diese Zeilen:
+ *   - Railway erstellt bei jedem Deployment einen neuen Container
+ *   - ASP.NET Core generiert dabei neue DataProtection-Keys
+ *   - Diese Keys werden benutzt um Antiforgery-Tokens zu signieren
+ *   - Ein Token vom alten Container ist mit neuen Keys ungültig
+ *   - Ergebnis: Alle offenen Formulare schlagen nach einem Deployment fehl → 500-Fehler
+ *
+ * Die Lösung:
+ *   - Keys im /data/ Verzeichnis speichern (Railway Volume = bleibt beim Neustart erhalten)
+ *   - Damit sind Tokens auch nach einem Deployment noch gültig
+ */
+if (Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT") != null)
+{
+    var keysDir = new DirectoryInfo("/data/keys");
+    keysDir.Create(); // Erstellt den Ordner falls er noch nicht existiert
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(keysDir); // Keys in Datei speichern statt im Arbeitsspeicher
+}
 
 // Sagt dem Webserver: Höre auf ALLEN Netzwerkschnittstellen (0.0.0.0) auf dem angegebenen Port.
 // "0.0.0.0" bedeutet "alle verfügbaren IP-Adressen", nicht nur localhost.

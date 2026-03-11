@@ -4,89 +4,163 @@
     ViewData["Title"] = "Neues Rezept";
 }
 
-<div class="container mt-4" style="max-width: 700px;">
+<style>
+    .form-label-styled {
+        display: block;
+        font-size: 0.72rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 8px;
+    }
 
-    <h1 class="mb-4">Neues Rezept erstellen</h1>
+    .form-hint {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-top: 4px;
+    }
+
+    .cat-toggle { display: none; }
+
+    .cat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        font-size: 0.72rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        font-weight: 700;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+    }
+
+    .cat-toggle:checked + .cat-pill {
+        border-color: currentColor;
+        background: currentColor;
+        color: #fff !important;
+    }
+
+    .cat-toggle:focus-visible + .cat-pill {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    .form-section { margin: 40px 0 32px; }
+</style>
+
+<!-- Hero -->
+<div class="page-hero">
+    <div class="container">
+        <span style="font-size:0.7rem; letter-spacing:3px; text-transform:uppercase;
+                     color:var(--muted); display:block; margin-bottom:8px;">Rezepte</span>
+        <h1>Neues Rezept erstellen</h1>
+    </div>
+</div>
+
+<div class="container" style="max-width:700px; padding-bottom:80px;">
 
     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
     <form method="post">
-        <div class="mb-3">
-            <label asp-for="Recipe.Title" class="form-label fw-bold"></label>
+
+        <!-- Grundinfos -->
+        <div class="mb-4">
+            <label asp-for="Recipe.Title" class="form-label-styled"></label>
             <input asp-for="Recipe.Title" class="form-control" placeholder="z.B. Spaghetti Bolognese" />
             <span asp-validation-for="Recipe.Title" class="text-danger small"></span>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label fw-bold">Kategorien</label>
-            <div class="d-flex flex-wrap gap-3">
+        <div class="mb-4">
+            <label class="form-label-styled">Kategorien</label>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
                 @foreach (var cat in Model.AllCategories)
                 {
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox"
-                               name="SelectedCategoryIds" value="@cat.Id" id="cat_@cat.Id" />
-                        <label class="form-check-label" for="cat_@cat.Id"
-                               style="color:@cat.Color; font-weight:600;">@cat.Name</label>
-                    </div>
+                    <span>
+                        <input class="cat-toggle" type="checkbox"
+                               name="SelectedCategoryIds" value="@cat.Id"
+                               id="cat_@cat.Id" />
+                        <label class="cat-pill" for="cat_@cat.Id"
+                               style="color:@cat.Color;">@cat.Name</label>
+                    </span>
                 }
             </div>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="Recipe.Description" class="form-label fw-bold"></label>
+        <div class="mb-4">
+            <label asp-for="Recipe.Description" class="form-label-styled"></label>
             <textarea asp-for="Recipe.Description" class="form-control" rows="2"
                       placeholder="Kurze Beschreibung des Rezepts"></textarea>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="Recipe.Ingredients" class="form-label fw-bold"></label>
-            <textarea asp-for="Recipe.Ingredients" class="form-control" rows="6"
-                      placeholder="Eine Zutat pro Zeile:&#10;200g Mehl&#10;3 Eier&#10;100ml Milch"></textarea>
-            <div class="form-text">Eine Zutat pro Zeile eingeben</div>
-            <span asp-validation-for="Recipe.Ingredients" class="text-danger small"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="Recipe.Steps" class="form-label fw-bold"></label>
-            <textarea asp-for="Recipe.Steps" class="form-control" rows="8"
-                      placeholder="Einen Schritt pro Zeile:&#10;Zwiebeln würfeln und anbraten&#10;Hackfleisch hinzufügen"></textarea>
-            <div class="form-text">Einen Schritt pro Zeile eingeben (Nummerierung nicht nötig)</div>
-            <span asp-validation-for="Recipe.Steps" class="text-danger small"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="Recipe.Servings" class="form-label fw-bold"></label>
-            <input asp-for="Recipe.Servings" class="form-control" type="number" min="1" max="100" />
-            <div class="form-text">Für wie viele Personen ist das Rezept?</div>
+        <div class="mb-4">
+            <label asp-for="Recipe.Servings" class="form-label-styled"></label>
+            <input asp-for="Recipe.Servings" class="form-control" type="number" min="1" max="100"
+                   style="max-width:140px;" />
+            <div class="form-hint">Für wie viele Personen?</div>
             <span asp-validation-for="Recipe.Servings" class="text-danger small"></span>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="Recipe.Equipment" class="form-label fw-bold"></label>
-            <textarea asp-for="Recipe.Equipment" class="form-control" rows="4"
-                      placeholder="Ein Gerät pro Zeile:&#10;Backofen&#10;Schneidebrett&#10;Messer"></textarea>
-            <div class="form-text">Optional: Ein Gerät / Utensil pro Zeile</div>
+        <!-- Rezept -->
+        <div class="form-section">
+            <div class="section-divider"><span>Rezept</span></div>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="Recipe.ImageUrl" class="form-label fw-bold"></label>
+        <div class="mb-4">
+            <label asp-for="Recipe.Ingredients" class="form-label-styled"></label>
+            <textarea asp-for="Recipe.Ingredients" class="form-control" rows="6"
+                      placeholder="Eine Zutat pro Zeile:&#10;200g Mehl&#10;3 Eier&#10;100ml Milch"></textarea>
+            <div class="form-hint">Eine Zutat pro Zeile eingeben</div>
+            <span asp-validation-for="Recipe.Ingredients" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="Recipe.Steps" class="form-label-styled"></label>
+            <textarea asp-for="Recipe.Steps" class="form-control" rows="8"
+                      placeholder="Einen Schritt pro Zeile:&#10;Zwiebeln würfeln und anbraten&#10;Hackfleisch hinzufügen"></textarea>
+            <div class="form-hint">Einen Schritt pro Zeile (Nummerierung nicht nötig)</div>
+            <span asp-validation-for="Recipe.Steps" class="text-danger small"></span>
+        </div>
+
+        <!-- Optional -->
+        <div class="form-section">
+            <div class="section-divider"><span>Optional</span></div>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="Recipe.Equipment" class="form-label-styled"></label>
+            <textarea asp-for="Recipe.Equipment" class="form-control" rows="3"
+                      placeholder="Ein Gerät pro Zeile:&#10;Backofen&#10;Schneidebrett"></textarea>
+            <div class="form-hint">Benötigte Geräte und Utensilien</div>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="Recipe.ImageUrl" class="form-label-styled"></label>
             <input asp-for="Recipe.ImageUrl" class="form-control"
                    placeholder="https://beispiel.com/bild.jpg" />
-            <div class="form-text">Optional: Link zu einem Bild im Internet</div>
+            <div class="form-hint">Link zu einem Bild im Internet</div>
             <span asp-validation-for="Recipe.ImageUrl" class="text-danger small"></span>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="Recipe.VideoUrl" class="form-label fw-bold"></label>
+        <div class="mb-4">
+            <label asp-for="Recipe.VideoUrl" class="form-label-styled"></label>
             <input asp-for="Recipe.VideoUrl" class="form-control"
                    placeholder="https://youtube.com/watch?v=..." />
-            <div class="form-text">Optional: YouTube-Link</div>
+            <div class="form-hint">YouTube-Link</div>
             <span asp-validation-for="Recipe.VideoUrl" class="text-danger small"></span>
         </div>
 
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-success">💾 Rezept speichern</button>
-            <a asp-page="/Index" class="btn btn-outline-secondary">Abbrechen</a>
+        <div style="display:flex; gap:12px; padding-top:8px;">
+            <button type="submit" class="btn-accent">
+                <i data-lucide="save" class="icon"></i> Rezept speichern
+            </button>
+            <a asp-page="/Index" class="btn-outline-ink">Abbrechen</a>
         </div>
+
     </form>
 </div>
