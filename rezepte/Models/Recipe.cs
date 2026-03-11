@@ -183,6 +183,9 @@ public class Recipe
      * auch wenn ich keinen Wert setze". Das "!" unterdrückt die Compiler-Warnung.
      * In der Praxis wird das Category-Objekt immer geladen, bevor es verwendet wird.
      */
+    // Legacy-Spalte aus alter Version (NOT NULL in bestehender DB), wird nicht mehr verwendet
+    public int CategoryId { get; set; } = 0;
+
     // Viele-zu-viele: Ein Rezept kann mehrere Kategorien haben
     public ICollection<Category> Categories { get; set; } = new List<Category>();
 }
