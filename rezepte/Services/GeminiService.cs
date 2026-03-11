@@ -129,22 +129,29 @@ public class GeminiService
          *   - Kein Markdown, kein Text drumherum – nur reines JSON
          */
         var prompt = $$"""
-            Analysiere diesen YouTube-Koch-Video-Titel und die Beschreibung und extrahiere das Rezept.
-            Antworte NUR mit einem JSON-Objekt in diesem Format (kein Markdown, kein Text drumherum):
+            Du bist ein Experte für Kochrezepte. Deine Aufgabe: Extrahiere ein vollständiges Rezept aus dem folgenden YouTube-Video-Titel und der Beschreibung.
+
+            WICHTIG:
+            - Antworte AUSSCHLIESSLICH mit einem JSON-Objekt, kein Text davor oder danach, kein Markdown
+            - Antworte IMMER auf Deutsch
+            - Falls die Beschreibung unvollständig ist: Nutze dein Wissen über das Gericht (anhand des Titels) um fehlende Zutaten und Schritte sinnvoll zu ergänzen
+            - Lieber zu viele Details als zu wenige
+
+            JSON-Format:
             {
-              "title": "Rezeptname",
-              "description": "Kurze Beschreibung in 1-2 Sätzen",
-              "ingredients": "200g Mehl\n3 Eier\n100ml Milch",
-              "steps": "Schritt 1\nSchritt 2\nSchritt 3",
-              "equipment": "Backofen\nSchneidebrett\nMesser\nRührschüssel",
+              "title": "Rezeptname auf Deutsch",
+              "description": "Appetitliche Kurzbeschreibung in 1-2 Sätzen",
+              "ingredients": "200g Mehl\n3 Eier\n100ml Milch\n...",
+              "steps": "Ausführlicher Schritt 1\nAusführlicher Schritt 2\n...",
+              "equipment": "Backofen\nSchneidebrett\nMesser",
               "servings": 4
             }
 
             Regeln:
-            - "ingredients": Eine Zutat pro Zeile, mit Menge (z.B. "200g Mehl", "3 Eier")
-            - "steps": Ein Schritt pro Zeile, ohne Nummerierung
-            - "equipment": Nur wirklich benötigte Küchengeräte und Utensilien, eines pro Zeile (z.B. Backofen, Pfanne, Mixer, Schneidebrett)
-            - "servings": Anzahl der Portionen als Zahl (Standard: 4 wenn nicht angegeben)
+            - "ingredients": Eine Zutat pro Zeile, immer mit Menge und Einheit (z.B. "200g Mehl", "3 Eier", "1 TL Salz")
+            - "steps": Ein Schritt pro Zeile, ausführlich beschrieben mit Temperaturen/Zeiten wenn bekannt, KEINE Nummerierung
+            - "equipment": Nur wirklich nötige Geräte, eines pro Zeile
+            - "servings": Zahl (Standard 4 wenn nicht genannt)
 
             Video-Titel: {{videoTitle}}
             Video-Beschreibung: {{videoDescription}}
