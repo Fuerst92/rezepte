@@ -43,6 +43,15 @@ var builder = WebApplication.CreateBuilder(args);
  */
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 
+// DataProtection-Keys auf Railway dauerhaft speichern (sonst gehen Antiforgery-Tokens verloren)
+if (Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT") != null)
+{
+    var keysDir = new DirectoryInfo("/data/keys");
+    keysDir.Create();
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(keysDir);
+}
+
 // Sagt dem Webserver: Höre auf ALLEN Netzwerkschnittstellen (0.0.0.0) auf dem angegebenen Port.
 // "0.0.0.0" bedeutet "alle verfügbaren IP-Adressen", nicht nur localhost.
 // Ohne diese Zeile würde die App auf Railway nicht erreichbar sein (sie würde nur lokal lauschen).
