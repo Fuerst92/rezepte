@@ -140,6 +140,23 @@ public class Recipe
     public bool IsFavorite { get; set; } = false;
 
     /*
+     * Servings – Wie viele Portionen das Rezept ergibt (Basis für den Portionsrechner).
+     * Der Portionsrechner auf der Detailseite rechnet die Zutaten relativ zu diesem Wert hoch/runter.
+     * Standardwert: 4 Portionen.
+     */
+    [Display(Name = "Portionen")]
+    [Range(1, 100, ErrorMessage = "Portionen müssen zwischen 1 und 100 liegen")]
+    public int Servings { get; set; } = 4;
+
+    /*
+     * Equipment – Benötigte Küchengeräte und Utensilien (z.B. "Backofen\nSchneidebrett\nMesser").
+     * Wird wie Ingredients als Text mit Zeilenumbrüchen gespeichert.
+     * Optional – nicht jedes Rezept braucht eine Geräteliste.
+     */
+    [Display(Name = "Benötigte Utensilien")]
+    public string? Equipment { get; set; }
+
+    /*
      * CreatedAt – Datum und Uhrzeit der Erstellung.
      * DateTime.Now gibt den aktuellen Zeitpunkt zurück.
      * Als Standardwert wird also der Zeitpunkt der Objekterstellung gesetzt.

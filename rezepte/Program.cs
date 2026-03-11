@@ -171,6 +171,8 @@ using (var scope = app.Services.CreateScope())
      *   - Ohne try/catch würde die App abstürzen, wenn die Spalte schon existiert
      */
     try { context.Database.ExecuteSqlRaw("ALTER TABLE Categories ADD COLUMN Color TEXT NOT NULL DEFAULT '#6c757d'"); } catch { }
+    try { context.Database.ExecuteSqlRaw("ALTER TABLE Recipes ADD COLUMN Servings INTEGER NOT NULL DEFAULT 4"); } catch { }
+    try { context.Database.ExecuteSqlRaw("ALTER TABLE Recipes ADD COLUMN Equipment TEXT"); } catch { }
 }
 
 /*

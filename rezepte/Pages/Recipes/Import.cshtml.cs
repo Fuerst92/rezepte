@@ -256,8 +256,10 @@ public class ImportModel : PageModel
         Recipe.Description = recipeData.Description;
         Recipe.Ingredients = recipeData.Ingredients;
         Recipe.Steps = recipeData.Steps;
-        Recipe.ImageUrl = videoInfo.Value.ThumbnailUrl; // YouTube-Thumbnail als Bild
-        Recipe.VideoUrl = YoutubeUrl;                    // Original-URL speichern
+        Recipe.Equipment = string.IsNullOrWhiteSpace(recipeData.Equipment) ? null : recipeData.Equipment;
+        Recipe.Servings = recipeData.Servings > 0 ? recipeData.Servings : 4;
+        Recipe.ImageUrl = videoInfo.Value.ThumbnailUrl;
+        Recipe.VideoUrl = YoutubeUrl;
 
         // VideoId für den Einbettungslink auf der Seite speichern
         VideoId = videoId;
@@ -318,6 +320,8 @@ public class ImportModel : PageModel
         Recipe.Description = recipeData.Description;
         Recipe.Ingredients = recipeData.Ingredients;
         Recipe.Steps = recipeData.Steps;
+        Recipe.Equipment = string.IsNullOrWhiteSpace(recipeData.Equipment) ? null : recipeData.Equipment;
+        Recipe.Servings = recipeData.Servings > 0 ? recipeData.Servings : 4;
 
         /*
          * SocialUrl ist optional: Wenn eine URL eingegeben wurde, speichern wir sie.

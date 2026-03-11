@@ -10,6 +10,12 @@
         .Split('\n', StringSplitOptions.RemoveEmptyEntries)
         .Select(s => s.Trim())
         .ToList();
+    var equipmentList = string.IsNullOrWhiteSpace(Model.Recipe.Equipment)
+        ? new List<string>()
+        : Model.Recipe.Equipment
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(e => e.Trim())
+            .ToList();
 }
 
 <style>
@@ -154,6 +160,64 @@
         padding: 0 4px;
     }
 
+    .portions-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 24px;
+        font-size: 0.9rem;
+        color: #374151;
+    }
+
+    .portions-label {
+        font-weight: 600;
+    }
+
+    .portions-btn {
+        width: 30px;
+        height: 30px;
+        border: 1px solid #d1d5db;
+        border-radius: 50%;
+        background: #fff;
+        font-size: 1.1rem;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .portions-btn:hover {
+        background: #f3f4f6;
+    }
+
+    #portions-input {
+        width: 56px;
+        text-align: center;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        padding: 3px 6px;
+        font-size: 0.95rem;
+    }
+
+    .equipment-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px 24px;
+        margin-bottom: 36px;
+    }
+
+    .equipment-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: #374151;
+        padding: 4px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
     /* ── Druckansicht ──
      * Diese Styles gelten NUR wenn die Seite gedruckt wird.
      * Der Browser blendet alles mit display:none aus, bevor er druckt.
@@ -227,12 +291,21 @@
 
             <hr class="recipe-divider">
 
+            <!-- Portionsrechner -->
+            <div class="portions-bar">
+                <span class="portions-label">🍽️ Portionen:</span>
+                <button class="portions-btn" onclick="changePortions(-1)">−</button>
+                <input type="number" id="portions-input" value="@Model.Recipe.Servings"
+                       min="1" max="100" oninput="updateIngredients()" />
+                <button class="portions-btn" onclick="changePortions(1)">+</button>
+            </div>
+
             <!-- Zutaten -->
             <h2 class="section-header">Zutaten</h2>
-            <div class="ingredients-grid">
+            <div class="ingredients-grid" id="ingredients-grid">
                 @foreach (var ingredient in ingredients)
                 {
-                    <span>@ingredient</span>
+                    <span data-original="@ingredient">@ingredient</span>
                 }
             </div>
 
@@ -249,6 +322,22 @@
                     </li>
                 }
             </ol>
+
+            <!-- Materialliste -->
+            @if (equipmentList.Any())
+            {
+                <hr class="recipe-divider">
+                <h2 class="section-header">Benötigte Utensilien</h2>
+                <div class="equipment-grid">
+                    @foreach (var item in equipmentList)
+                    {
+                        <div class="equipment-item">
+                            <span class="equipment-icon">🔪</span>
+                            <span>@item</span>
+                        </div>
+                    }
+                </div>
+            }
 
             <!-- Meta-Infos -->
             <hr class="recipe-divider">
@@ -274,3 +363,34 @@
         </div>
     </div>
 </div>
+
+<script>
+    const basePortions = @Model.Recipe.Servings;
+
+    function changePortions(delta) {
+        const input = document.getElementById('portions-input');
+        const newVal = Math.max(1, (parseInt(input.value) || basePortions) + delta);
+        input.value = newVal;
+        updateIngredients();
+    }
+
+    function updateIngredients() {
+        const input = document.getElementById('portions-input');
+        const newPortions = Math.max(1, parseInt(input.value) || basePortions);
+        const factor = newPortions / basePortions;
+
+        document.querySelectorAll('#ingredients-grid span').forEach(span => {
+            const original = span.getAttribute('data-original');
+            span.textContent = scaleIngredient(original, factor);
+        });
+    }
+
+    // Zahlen in einem Zutaten-Text skalieren (z.B. "200g Mehl" → "400g Mehl")
+    function scaleIngredient(text, factor) {
+        return text.replace(/\d+([.,]\d+)?/g, match => {
+            const num = parseFloat(match.replace(',', '.')) * factor;
+            if (num % 1 === 0) return Math.round(num).toString();
+            return (Math.round(num * 10) / 10).toString().replace('.', ',');
+        });
+    }
+</script>

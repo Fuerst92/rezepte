@@ -48,6 +48,20 @@
         </div>
 
         <div class="mb-3">
+            <label asp-for="Recipe.Servings" class="form-label fw-bold"></label>
+            <input asp-for="Recipe.Servings" class="form-control" type="number" min="1" max="100" />
+            <div class="form-text">Für wie viele Personen ist das Rezept?</div>
+            <span asp-validation-for="Recipe.Servings" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Recipe.Equipment" class="form-label fw-bold"></label>
+            <textarea asp-for="Recipe.Equipment" class="form-control" rows="4"
+                      placeholder="Ein Gerät pro Zeile:&#10;Backofen&#10;Schneidebrett&#10;Messer"></textarea>
+            <div class="form-text">Optional: Ein Gerät / Utensil pro Zeile</div>
+        </div>
+
+        <div class="mb-3">
             <label asp-for="Recipe.ImageUrl" class="form-label fw-bold"></label>
             <input asp-for="Recipe.ImageUrl" class="form-control"
                    placeholder="https://beispiel.com/bild.jpg" />

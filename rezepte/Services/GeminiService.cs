@@ -42,14 +42,14 @@ namespace rezepte.Services;
  */
 public class RecipeData
 {
-    // Rezeptname (von der KI extrahiert)
     public string Title { get; set; } = "";
-    // Kurze Beschreibung des Rezepts
     public string Description { get; set; } = "";
-    // Zutaten als Text (mit Zeilenumbrüchen)
     public string Ingredients { get; set; } = "";
-    // Zubereitungsschritte als Text (mit Zeilenumbrüchen)
     public string Steps { get; set; } = "";
+    // Benötigte Küchengeräte/Utensilien (von der KI extrahiert)
+    public string Equipment { get; set; } = "";
+    // Anzahl der Portionen
+    public int Servings { get; set; } = 4;
 }
 
 // Hauptklasse des Services
@@ -134,9 +134,17 @@ public class GeminiService
             {
               "title": "Rezeptname",
               "description": "Kurze Beschreibung in 1-2 Sätzen",
-              "ingredients": "Zutat 1\nZutat 2\nZutat 3",
-              "steps": "Schritt 1\nSchritt 2\nSchritt 3"
+              "ingredients": "200g Mehl\n3 Eier\n100ml Milch",
+              "steps": "Schritt 1\nSchritt 2\nSchritt 3",
+              "equipment": "Backofen\nSchneidebrett\nMesser\nRührschüssel",
+              "servings": 4
             }
+
+            Regeln:
+            - "ingredients": Eine Zutat pro Zeile, mit Menge (z.B. "200g Mehl", "3 Eier")
+            - "steps": Ein Schritt pro Zeile, ohne Nummerierung
+            - "equipment": Nur wirklich benötigte Küchengeräte und Utensilien, eines pro Zeile (z.B. Backofen, Pfanne, Mixer, Schneidebrett)
+            - "servings": Anzahl der Portionen als Zahl (Standard: 4 wenn nicht angegeben)
 
             Video-Titel: {{videoTitle}}
             Video-Beschreibung: {{videoDescription}}
