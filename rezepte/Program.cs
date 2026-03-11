@@ -17,7 +17,6 @@
 // "using" bedeutet: wir wollen Code aus einer anderen Bibliothek benutzen.
 // Ohne "using" müsste man den vollen Namen tippen, z.B.:
 // Microsoft.EntityFrameworkCore.DbContextOptionsBuilder statt einfach DbContextOptionsBuilder
-using Microsoft.AspNetCore.DataProtection; // Für persistente Antiforgery-Keys
 using Microsoft.EntityFrameworkCore;  // Für die Datenbankverbindung (EF Core)
 using rezepte.Data;                   // Unsere eigene Datenbankklasse (AppDbContext)
 using rezepte.Services;               // Unsere eigenen Service-Klassen (YouTube, Gemini)
@@ -44,14 +43,6 @@ var builder = WebApplication.CreateBuilder(args);
  */
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 
-// DataProtection-Keys auf Railway dauerhaft speichern (sonst gehen Antiforgery-Tokens verloren)
-if (Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT") != null)
-{
-    var keysDir = new DirectoryInfo("/data/keys");
-    keysDir.Create();
-    builder.Services.AddDataProtection()
-        .PersistKeysToFileSystem(keysDir);
-}
 
 // Sagt dem Webserver: Höre auf ALLEN Netzwerkschnittstellen (0.0.0.0) auf dem angegebenen Port.
 // "0.0.0.0" bedeutet "alle verfügbaren IP-Adressen", nicht nur localhost.
