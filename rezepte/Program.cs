@@ -17,6 +17,7 @@
 // "using" bedeutet: wir wollen Code aus einer anderen Bibliothek benutzen.
 // Ohne "using" müsste man den vollen Namen tippen, z.B.:
 // Microsoft.EntityFrameworkCore.DbContextOptionsBuilder statt einfach DbContextOptionsBuilder
+using Microsoft.AspNetCore.DataProtection; // Für persistente Antiforgery-Keys
 using Microsoft.EntityFrameworkCore;  // Für die Datenbankverbindung (EF Core)
 using rezepte.Data;                   // Unsere eigene Datenbankklasse (AppDbContext)
 using rezepte.Services;               // Unsere eigenen Service-Klassen (YouTube, Gemini)
