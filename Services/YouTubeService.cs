@@ -10,14 +10,17 @@ public class YouTubeService
     private readonly string[] _instances =
     {
         "https://inv.nadeko.net",
+        "https://yewtu.be",
         "https://invidious.privacyredirect.com",
-        "https://invidious.nerdvpn.de"
+        "https://iv.ggtyler.dev",
+        "https://invidious.nerdvpn.de",
+        "https://invidious.io.lol"
     };
 
     public YouTubeService(HttpClient http)
     {
         _http = http;
-        _http.Timeout = TimeSpan.FromSeconds(10);
+        _http.Timeout = TimeSpan.FromSeconds(15);
     }
 
     // Extrahiert die Video-ID aus einer YouTube-URL
