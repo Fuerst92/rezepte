@@ -61,40 +61,25 @@
 
                 <a asp-page="/Recipes/Edit" asp-route-id="@Model.Recipe.Id" class="btn-outline-ink"
                    style="display:block; text-align:center;">
-                    Bearbeiten
+                    ✏ Bearbeiten
                 </a>
 
                 <form method="post" asp-page-handler="ToggleFavorite">
                     <input type="hidden" name="id" value="@Model.Recipe.Id" />
-                    <button type="submit"
-                            style="width:100%; padding:8px 20px; font-size:0.72rem; letter-spacing:1.5px;
-                                   text-transform:uppercase; font-weight:700; cursor:pointer;
-                                   border:1px solid @(Model.Recipe.IsFavorite ? "#e63950" : "#e8c8cc");
-                                   background:@(Model.Recipe.IsFavorite ? "#e63950" : "transparent");
-                                   color:@(Model.Recipe.IsFavorite ? "#fff" : "#c0525f");
-                                   transition:all 0.2s;">
-                        @(Model.Recipe.IsFavorite ? "Favorit gespeichert" : "Als Favorit markieren")
+                    <button type="submit" class="detail-action-btn @(Model.Recipe.IsFavorite ? "detail-action-btn-fav-on" : "detail-action-btn-fav-off")">
+                        @(Model.Recipe.IsFavorite ? "👑 Favorit gespeichert" : "♡ Als Favorit markieren")
                     </button>
                 </form>
 
                 <form method="post" asp-page-handler="Delete"
                       onsubmit="return confirm('Rezept wirklich löschen?')">
                     <input type="hidden" name="id" value="@Model.Recipe.Id" />
-                    <button type="submit"
-                            style="width:100%; padding:8px 20px; font-size:0.72rem; letter-spacing:1.5px;
-                                   text-transform:uppercase; font-weight:700; cursor:pointer;
-                                   border:1px solid var(--border); background:transparent;
-                                   color:var(--muted); transition:all 0.2s;"
-                            onmouseover="this.style.borderColor='#c0392b'; this.style.color='#c0392b';"
-                            onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--muted)';">
+                    <button type="submit" class="detail-action-btn detail-action-btn-delete">
                         Löschen
                     </button>
                 </form>
 
-                <button onclick="window.print()" class="no-print"
-                        style="width:100%; padding:8px 20px; font-size:0.72rem; letter-spacing:1.5px;
-                               text-transform:uppercase; font-weight:700; cursor:pointer;
-                               border:1px solid var(--border); background:transparent; color:var(--muted);">
+                <button onclick="window.print()" class="no-print detail-action-btn detail-action-btn-print">
                     Drucken
                 </button>
 
@@ -109,10 +94,8 @@
             <ul style="list-style:none; padding:0; margin:0 0 48px;">
                 @foreach (var ingredient in ingredients)
                 {
-                    <li style="padding:10px 0; border-bottom:1px solid var(--border); font-size:0.9rem;
-                                display:flex; align-items:center; gap:12px;">
-                        <span style="width:6px; height:6px; border-radius:50%; background:var(--accent);
-                                     flex-shrink:0; display:inline-block;"></span>
+                    <li class="ingredient-item scroll-fade">
+                        <span class="ingredient-dot"></span>
                         @ingredient.Trim()
                     </li>
                 }
@@ -123,13 +106,9 @@
             <ol style="list-style:none; padding:0; margin:0 0 48px;">
                 @for (int i = 0; i < steps.Length; i++)
                 {
-                    <li style="padding:16px 0; border-bottom:1px solid var(--border);
-                                display:flex; gap:20px; align-items:baseline;">
-                        <span style="font-family:'Playfair Display',serif; font-size:1.4rem;
-                                     font-weight:700; color:var(--accent); min-width:32px; line-height:1;">
-                            @(i + 1)
-                        </span>
-                        <span style="font-size:0.9rem; line-height:1.7;">@steps[i].Trim()</span>
+                    <li class="step-item scroll-fade" style="transition-delay: @(i * 60)ms">
+                        <span class="step-number">@(i + 1)</span>
+                        <span class="step-text">@steps[i].Trim()</span>
                     </li>
                 }
             </ol>

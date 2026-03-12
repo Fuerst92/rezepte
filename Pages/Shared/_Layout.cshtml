@@ -18,6 +18,10 @@
             --card-bg: #ffffff;
             --border:  #e4dfd8;
             --accent:  #b64d1f;
+            --accent-light: rgba(182,77,31,0.08);
+            --shadow-sm: 0 2px 8px rgba(28,28,28,0.06);
+            --shadow-md: 0 8px 32px rgba(28,28,28,0.10);
+            --shadow-lg: 0 20px 56px rgba(28,28,28,0.13);
         }
 
         body {
@@ -32,18 +36,43 @@
             font-family: 'Playfair Display', serif;
         }
 
-        a { color: inherit; }
+        a { color: inherit; text-decoration: none; }
         a:hover { color: var(--accent); }
+
+        /* ─── Einblend-Animationen ─── */
+        @@keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @@keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        .anim-fade-up {
+            opacity: 0;
+            animation: fadeUp 0.55s ease forwards;
+        }
 
         /* ─── Navbar ─── */
         .site-header {
-            background: #fff;
+            background: rgba(255,255,255,0.95);
             border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: box-shadow 0.3s;
+        }
+
+        .site-header.scrolled {
+            box-shadow: var(--shadow-md);
         }
 
         .site-header .top-bar {
             text-align: center;
-            padding: 28px 0 12px;
+            padding: 24px 0 10px;
             border-bottom: 1px solid var(--border);
         }
 
@@ -54,7 +83,9 @@
             color: var(--ink);
             text-decoration: none;
             letter-spacing: 0;
+            transition: opacity 0.2s;
         }
+        .site-header .site-title:hover { opacity: 0.75; color: var(--ink); }
 
         .site-header .site-title span {
             font-style: italic;
@@ -62,7 +93,7 @@
         }
 
         .site-header .site-tagline {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--muted);
@@ -82,8 +113,8 @@
 
         .main-nav a {
             display: block;
-            padding: 12px 20px;
-            font-size: 0.78rem;
+            padding: 11px 18px;
+            font-size: 0.76rem;
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: 700;
@@ -96,11 +127,12 @@
         .main-nav a::after {
             content: '';
             position: absolute;
-            bottom: 0; left: 20px; right: 20px;
+            bottom: 0; left: 18px; right: 18px;
             height: 2px;
             background: var(--accent);
             transform: scaleX(0);
-            transition: transform 0.2s;
+            transform-origin: left;
+            transition: transform 0.25s ease;
         }
 
         .main-nav a:hover { color: var(--accent); }
@@ -109,11 +141,17 @@
         .main-nav .nav-new a {
             background: var(--accent);
             color: #fff;
-            border-radius: 2px;
+            border-radius: 3px;
             margin-left: 12px;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
         }
 
-        .main-nav .nav-new a:hover { background: #9a3e16; color: #fff; }
+        .main-nav .nav-new a:hover {
+            background: #9a3e16;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(182,77,31,0.3);
+        }
         .main-nav .nav-new a::after { display: none; }
 
         /* Mobile nav */
@@ -126,13 +164,24 @@
             letter-spacing: 1px;
             cursor: pointer;
             color: var(--ink);
+            transition: border-color 0.2s;
         }
+        .mobile-nav-toggle:hover { border-color: var(--ink); }
 
         @@media (max-width: 768px) {
             .mobile-nav-toggle { display: block; }
             .main-nav { display: none; flex-direction: column; padding-bottom: 8px; }
             .main-nav.open { display: flex; }
             .main-nav .nav-new a { margin: 4px 20px 0; }
+        }
+
+        /* ─── Recipe Card Wrapper (hover lift) ─── */
+        .recipe-card-outer {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .recipe-card-outer:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
         }
 
         /* ─── Cards ─── */
@@ -163,11 +212,11 @@
             height: 100%;
             object-fit: cover;
             display: block;
-            transition: transform 0.5s ease;
+            transition: transform 0.55s ease;
         }
 
-        .recipe-card:hover .img-wrap img {
-            transform: scale(1.04);
+        .recipe-card-outer:hover .img-wrap img {
+            transform: scale(1.06);
         }
 
         .recipe-card .img-placeholder {
@@ -178,6 +227,10 @@
             justify-content: center;
             font-size: 3rem;
             color: #c8c0b4;
+            transition: transform 0.3s ease;
+        }
+        .recipe-card-outer:hover .img-placeholder {
+            transform: scale(1.1);
         }
 
         .recipe-card .card-meta {
@@ -229,9 +282,12 @@
             font-weight: 700;
             color: var(--ink);
             text-decoration: none;
+            transition: color 0.2s, letter-spacing 0.2s;
         }
-
-        .recipe-card .card-actions .read-more:hover { color: var(--accent); }
+        .recipe-card .card-actions .read-more:hover {
+            color: var(--accent);
+            letter-spacing: 2px;
+        }
 
         .fav-btn {
             background: none;
@@ -239,12 +295,13 @@
             font-size: 1.1rem;
             color: var(--muted);
             cursor: pointer;
-            padding: 0;
+            padding: 4px;
             line-height: 1;
-            transition: color 0.2s;
+            transition: color 0.2s, transform 0.2s;
+            border-radius: 50%;
         }
-
-        .fav-btn:hover, .fav-btn.active { color: #e63950; }
+        .fav-btn:hover { color: #e63950; transform: scale(1.2); }
+        .fav-btn.active { color: #e63950; }
 
         /* ─── Section Heading ─── */
         .section-heading {
@@ -303,27 +360,32 @@
 
         .filter-pill {
             display: inline-block;
-            padding: 6px 18px;
-            font-size: 0.75rem;
+            padding: 7px 18px;
+            font-size: 0.72rem;
             letter-spacing: 1.5px;
             text-transform: uppercase;
             font-weight: 700;
             border: 1px solid var(--border);
             text-decoration: none;
             color: var(--muted);
-            transition: all 0.2s;
+            border-radius: 99px;
+            transition: all 0.22s ease;
             background: #fff;
         }
 
         .filter-pill:hover {
             border-color: var(--ink);
             color: var(--ink);
+            background: var(--warm-bg);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
         }
 
         .filter-pill.active {
             background: var(--ink);
             border-color: var(--ink);
             color: #fff;
+            box-shadow: var(--shadow-sm);
         }
 
         .filter-pill.fav-pill { border-color: #e8c8cc; color: #c0525f; }
@@ -337,9 +399,10 @@
         .page-hero {
             background: #fff;
             border-bottom: 1px solid var(--border);
-            padding: 40px 0 32px;
+            padding: 44px 0 36px;
             margin-bottom: 52px;
             text-align: center;
+            animation: fadeIn 0.5s ease;
         }
 
         .page-hero h1 {
@@ -358,39 +421,51 @@
             background: var(--ink);
             color: #fff;
             border: none;
-            padding: 10px 28px;
+            padding: 11px 28px;
             font-size: 0.75rem;
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: 700;
             text-decoration: none;
             display: inline-block;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            border-radius: 2px;
         }
-
-        .btn-ink:hover { background: #333; color: #fff; }
+        .btn-ink:hover {
+            background: #333;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(28,28,28,0.2);
+        }
+        .btn-ink:active { transform: translateY(0); }
 
         .btn-accent {
             background: var(--accent);
             color: #fff;
             border: none;
-            padding: 10px 28px;
+            padding: 11px 28px;
             font-size: 0.75rem;
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: 700;
             text-decoration: none;
             display: inline-block;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            border-radius: 2px;
         }
-
-        .btn-accent:hover { background: #9a3e16; color: #fff; }
+        .btn-accent:hover {
+            background: #9a3e16;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(182,77,31,0.3);
+        }
+        .btn-accent:active { transform: translateY(0); }
 
         .btn-outline-ink {
             background: transparent;
             color: var(--ink);
             border: 1px solid var(--border);
-            padding: 8px 20px;
+            padding: 9px 20px;
             font-size: 0.72rem;
             letter-spacing: 1.5px;
             text-transform: uppercase;
@@ -398,11 +473,114 @@
             text-decoration: none;
             display: inline-block;
             transition: all 0.2s;
+            border-radius: 2px;
         }
-
         .btn-outline-ink:hover {
             border-color: var(--ink);
             color: var(--ink);
+            background: var(--accent-light);
+            transform: translateY(-1px);
+        }
+
+        /* ─── Detail-Seite Aktionen ─── */
+        .detail-action-btn {
+            width: 100%;
+            padding: 9px 20px;
+            font-size: 0.72rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.2s;
+            font-family: 'Lato', sans-serif;
+        }
+        .detail-action-btn-fav-off {
+            border: 1px solid #e8c8cc;
+            background: transparent;
+            color: #c0525f;
+        }
+        .detail-action-btn-fav-off:hover {
+            background: #e63950;
+            border-color: #e63950;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(230,57,80,0.2);
+        }
+        .detail-action-btn-fav-on {
+            border: 1px solid #e63950;
+            background: #e63950;
+            color: #fff;
+        }
+        .detail-action-btn-fav-on:hover {
+            background: #c0292b;
+            border-color: #c0292b;
+        }
+        .detail-action-btn-delete {
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+        }
+        .detail-action-btn-delete:hover {
+            border-color: #c0392b;
+            color: #c0392b;
+            background: rgba(192,57,43,0.06);
+        }
+        .detail-action-btn-print {
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+        }
+        .detail-action-btn-print:hover {
+            border-color: var(--ink);
+            color: var(--ink);
+        }
+
+        /* ─── Zutaten & Zubereitung ─── */
+        .ingredient-item {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.15s, padding-left 0.15s;
+            border-radius: 2px;
+        }
+        .ingredient-item:hover {
+            background: var(--accent-light);
+            padding-left: 8px;
+        }
+        .ingredient-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+            display: inline-block;
+        }
+
+        .step-item {
+            padding: 18px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 20px;
+            align-items: baseline;
+            transition: background 0.15s;
+            border-radius: 2px;
+        }
+        .step-item:hover { background: var(--accent-light); padding-left: 8px; padding-right: 8px; }
+        .step-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 32px;
+            line-height: 1;
+        }
+        .step-text {
+            font-size: 0.9rem;
+            line-height: 1.7;
         }
 
         /* Bootstrap overrides */
@@ -419,7 +597,7 @@
             background: var(--ink);
             color: #888;
             text-align: center;
-            padding: 40px 0;
+            padding: 44px 0;
             margin-top: 80px;
         }
 
@@ -431,6 +609,17 @@
         }
 
         .site-footer p { font-size: 0.8rem; margin: 0; }
+
+        /* ─── Scroll-Fade-In ─── */
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.55s ease, transform 0.55s ease;
+        }
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -469,5 +658,25 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        // ── Sticky Header Schatten ─────────────────────
+        const header = document.querySelector('.site-header');
+        window.addEventListener('scroll', () => {
+            header.classList.toggle('scrolled', window.scrollY > 10);
+        });
+
+        // ── Scroll-Fade-In Effekt ──────────────────────
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.scroll-fade').forEach(el => observer.observe(el));
+    </script>
 </body>
 </html>

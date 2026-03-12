@@ -102,10 +102,11 @@
         {
             <div class="section-divider"><span>Alle Rezepte</span></div>
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-5 mb-5">
+                @{ int cardIndex = 0; }
                 @foreach (var recipe in gridRecipes)
                 {
-                    <div class="col">
-                        <div>
+                    <div class="col scroll-fade" style="transition-delay: @(cardIndex * 80)ms">
+                        <div class="recipe-card-outer" style="background:#fff; overflow:hidden;">
                             <a asp-page="/Recipes/Detail" asp-route-id="@recipe.Id" class="recipe-card d-block text-decoration-none">
                                 <div class="img-wrap">
                                     @if (!string.IsNullOrEmpty(recipe.ImageUrl))
@@ -118,7 +119,7 @@
                                     }
                                 </div>
                             </a>
-                            <div class="card-meta">
+                            <div class="card-meta" style="padding: 16px 16px 16px;">
                                 <span class="category-label">@recipe.Category.Name</span>
                                 <div class="card-title">
                                     <a asp-page="/Recipes/Detail" asp-route-id="@recipe.Id"
@@ -144,6 +145,7 @@
                             </div>
                         </div>
                     </div>
+                    cardIndex++;
                 }
             </div>
         }
