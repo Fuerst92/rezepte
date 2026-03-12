@@ -5,8 +5,9 @@ namespace rezepte.Services;
 public class YouTubeService
 {
     private readonly HttpClient _http;
+    private readonly string? _apiKey;
 
-    // Invidious-Server als Backup-Liste (kein API-Key nötig!)
+    // Invidious-Server als Fallback (kein API-Key nötig)
     private readonly string[] _instances =
     {
         "https://inv.nadeko.net",
@@ -17,10 +18,11 @@ public class YouTubeService
         "https://invidious.io.lol"
     };
 
-    public YouTubeService(HttpClient http)
+    public YouTubeService(HttpClient http, IConfiguration config)
     {
         _http = http;
         _http.Timeout = TimeSpan.FromSeconds(15);
+        _apiKey = config["ApiKeys:YouTube"];
     }
 
     // Extrahiert die Video-ID aus einer YouTube-URL
@@ -50,9 +52,49 @@ public class YouTubeService
         return null;
     }
 
-    // Holt Video-Infos über Invidious (kein API-Key nötig)
+    // Holt Video-Infos — erst über YouTube API, dann Invidious als Fallback
     public async Task<(string Title, string Description, string ThumbnailUrl)?> GetVideoInfoAsync(string videoId)
     {
+        // Offizielle YouTube Data API v3 (wenn Key vorhanden)
+        if (!string.IsNullOrWhiteSpace(_apiKey))
+        {
+            try
+            {
+                var url = $"https://www.googleapis.com/youtube/v3/videos?id={videoId}&part=snippet&key={_apiKey}";
+                var response = await _http.GetStringAsync(url);
+                using var doc = JsonDocument.Parse(response);
+
+                var items = doc.RootElement.GetProperty("items");
+                if (items.GetArrayLength() > 0)
+                {
+                    var snippet = items[0].GetProperty("snippet");
+                    var title       = snippet.GetProperty("title").GetString() ?? "";
+                    var description = snippet.GetProperty("description").GetString() ?? "";
+
+                    var thumbnail = "";
+                    if (snippet.TryGetProperty("thumbnails", out var thumbs))
+                    {
+                        // Beste Qualität: maxres → high → medium → default
+                        foreach (var quality in new[] { "maxres", "high", "medium", "default" })
+                        {
+                            if (thumbs.TryGetProperty(quality, out var t))
+                            {
+                                thumbnail = t.GetProperty("url").GetString() ?? "";
+                                break;
+                            }
+                        }
+                    }
+
+                    return (title, description, thumbnail);
+                }
+            }
+            catch
+            {
+                // Falls YouTube API fehlschlägt → Invidious versuchen
+            }
+        }
+
+        // Invidious als Fallback
         foreach (var server in _instances)
         {
             try
@@ -60,10 +102,9 @@ public class YouTubeService
                 var response = await _http.GetStringAsync($"{server}/api/v1/videos/{videoId}");
                 using var doc = JsonDocument.Parse(response);
 
-                var title = doc.RootElement.GetProperty("title").GetString() ?? "";
+                var title       = doc.RootElement.GetProperty("title").GetString() ?? "";
                 var description = doc.RootElement.GetProperty("description").GetString() ?? "";
 
-                // Thumbnail aus dem videoThumbnails Array holen
                 var thumbnail = "";
                 if (doc.RootElement.TryGetProperty("videoThumbnails", out var thumbs) && thumbs.GetArrayLength() > 0)
                     thumbnail = thumbs[0].GetProperty("url").GetString() ?? "";
@@ -72,9 +113,10 @@ public class YouTubeService
             }
             catch
             {
-                continue; // Nächsten Server versuchen
+                continue;
             }
         }
+
         return null;
     }
 }
