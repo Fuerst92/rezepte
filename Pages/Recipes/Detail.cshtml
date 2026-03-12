@@ -2,84 +2,145 @@
 @model rezepte.Pages.Recipes.DetailModel
 @{
     ViewData["Title"] = Model.Recipe.Title;
+    var ingredients = Model.Recipe.Ingredients.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+    var steps = Model.Recipe.Steps.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 }
 
-<div class="container mt-4">
+<!-- Hero -->
+<div class="page-hero">
+    <div class="container">
+        <span style="font-size:0.68rem; letter-spacing:2.5px; text-transform:uppercase;
+                     color:var(--accent); font-weight:700; display:block; margin-bottom:10px;">
+            @Model.Recipe.Category.Name
+        </span>
+        <h1>@Model.Recipe.Title</h1>
+        @if (!string.IsNullOrEmpty(Model.Recipe.Description))
+        {
+            <p>@Model.Recipe.Description</p>
+        }
+    </div>
+</div>
 
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-page="/Index">Rezepte</a></li>
-            <li class="breadcrumb-item active">@Model.Recipe.Title</li>
+<div class="container" style="max-width:960px;">
+
+    <nav aria-label="breadcrumb" class="mb-5">
+        <ol class="breadcrumb" style="font-size:0.75rem; letter-spacing:1px; text-transform:uppercase;">
+            <li class="breadcrumb-item">
+                <a asp-page="/Index" style="color:var(--muted); text-decoration:none;">Rezepte</a>
+            </li>
+            <li class="breadcrumb-item active" style="color:var(--ink);">@Model.Recipe.Title</li>
         </ol>
     </nav>
 
-    <div class="row">
+    <div class="row g-5">
+
+        <!-- Bild & Aktionen -->
         <div class="col-md-4">
+
             @if (!string.IsNullOrEmpty(Model.Recipe.ImageUrl))
             {
-                <img src="@Model.Recipe.ImageUrl" class="img-fluid rounded mb-3" alt="@Model.Recipe.Title">
+                <div style="overflow:hidden; aspect-ratio:4/3; background:#ede9e3; margin-bottom:24px;">
+                    <img src="@Model.Recipe.ImageUrl" alt="@Model.Recipe.Title"
+                         style="width:100%; height:100%; object-fit:cover; display:block;">
+                </div>
             }
             else
             {
-                <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3"
-                     style="height: 250px;">
-                    <span class="text-muted fs-1">🍴</span>
+                <div style="aspect-ratio:4/3; background:#ede9e3; display:flex; align-items:center;
+                            justify-content:center; font-size:3.5rem; color:#c8c0b4; margin-bottom:24px;">
+                    🍴
                 </div>
             }
 
-            <span class="badge bg-secondary fs-6 mb-3 d-block">@Model.Recipe.Category.Name</span>
-            <p class="text-muted small">Erstellt am @Model.Recipe.CreatedAt.ToString("dd.MM.yyyy")</p>
+            <p style="font-size:0.75rem; letter-spacing:1px; text-transform:uppercase;
+                      color:var(--muted); margin-bottom:24px;">
+                Erstellt am @Model.Recipe.CreatedAt.ToString("dd.MM.yyyy")
+            </p>
 
-            <div class="d-grid gap-2">
-                <a asp-page="/Recipes/Edit" asp-route-id="@Model.Recipe.Id"
-                   class="btn btn-outline-primary">✏️ Bearbeiten</a>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+
+                <a asp-page="/Recipes/Edit" asp-route-id="@Model.Recipe.Id" class="btn-outline-ink"
+                   style="display:block; text-align:center;">
+                    Bearbeiten
+                </a>
 
                 <form method="post" asp-page-handler="ToggleFavorite">
                     <input type="hidden" name="id" value="@Model.Recipe.Id" />
-                    <button class="btn w-100 @(Model.Recipe.IsFavorite ? "btn-warning" : "btn-outline-warning")">
-                        @(Model.Recipe.IsFavorite ? "👑 Als Favorit gespeichert" : "♡ Als Favorit markieren")
+                    <button type="submit"
+                            style="width:100%; padding:8px 20px; font-size:0.72rem; letter-spacing:1.5px;
+                                   text-transform:uppercase; font-weight:700; cursor:pointer;
+                                   border:1px solid @(Model.Recipe.IsFavorite ? "#e63950" : "#e8c8cc");
+                                   background:@(Model.Recipe.IsFavorite ? "#e63950" : "transparent");
+                                   color:@(Model.Recipe.IsFavorite ? "#fff" : "#c0525f");
+                                   transition:all 0.2s;">
+                        @(Model.Recipe.IsFavorite ? "Favorit gespeichert" : "Als Favorit markieren")
                     </button>
                 </form>
 
                 <form method="post" asp-page-handler="Delete"
                       onsubmit="return confirm('Rezept wirklich löschen?')">
                     <input type="hidden" name="id" value="@Model.Recipe.Id" />
-                    <button class="btn btn-outline-danger w-100">🗑️ Löschen</button>
+                    <button type="submit"
+                            style="width:100%; padding:8px 20px; font-size:0.72rem; letter-spacing:1.5px;
+                                   text-transform:uppercase; font-weight:700; cursor:pointer;
+                                   border:1px solid var(--border); background:transparent;
+                                   color:var(--muted); transition:all 0.2s;"
+                            onmouseover="this.style.borderColor='#c0392b'; this.style.color='#c0392b';"
+                            onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--muted)';">
+                        Löschen
+                    </button>
                 </form>
 
-                <button class="btn btn-outline-secondary w-100 no-print" onclick="window.print()">
-                    🖨️ Drucken
+                <button onclick="window.print()" class="no-print"
+                        style="width:100%; padding:8px 20px; font-size:0.72rem; letter-spacing:1.5px;
+                               text-transform:uppercase; font-weight:700; cursor:pointer;
+                               border:1px solid var(--border); background:transparent; color:var(--muted);">
+                    Drucken
                 </button>
+
             </div>
         </div>
 
+        <!-- Inhalt -->
         <div class="col-md-8">
-            <h1>@Model.Recipe.Title</h1>
-            <p class="lead text-muted">@Model.Recipe.Description</p>
-            <hr>
 
-            <h4>Zutaten</h4>
-            <ul class="list-group list-group-flush mb-4">
-                @foreach (var ingredient in Model.Recipe.Ingredients.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+            <div class="section-divider"><span>Zutaten</span></div>
+
+            <ul style="list-style:none; padding:0; margin:0 0 48px;">
+                @foreach (var ingredient in ingredients)
                 {
-                    <li class="list-group-item">@ingredient.Trim()</li>
+                    <li style="padding:10px 0; border-bottom:1px solid var(--border); font-size:0.9rem;
+                                display:flex; align-items:center; gap:12px;">
+                        <span style="width:6px; height:6px; border-radius:50%; background:var(--accent);
+                                     flex-shrink:0; display:inline-block;"></span>
+                        @ingredient.Trim()
+                    </li>
                 }
             </ul>
 
-            <h4>Zubereitung</h4>
-            <ol class="list-group list-group-flush list-group-numbered mb-4">
-                @foreach (var step in Model.Recipe.Steps.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+            <div class="section-divider"><span>Zubereitung</span></div>
+
+            <ol style="list-style:none; padding:0; margin:0 0 48px;">
+                @for (int i = 0; i < steps.Length; i++)
                 {
-                    <li class="list-group-item">@step.Trim()</li>
+                    <li style="padding:16px 0; border-bottom:1px solid var(--border);
+                                display:flex; gap:20px; align-items:baseline;">
+                        <span style="font-family:'Playfair Display',serif; font-size:1.4rem;
+                                     font-weight:700; color:var(--accent); min-width:32px; line-height:1;">
+                            @(i + 1)
+                        </span>
+                        <span style="font-size:0.9rem; line-height:1.7;">@steps[i].Trim()</span>
+                    </li>
                 }
             </ol>
 
             @if (!string.IsNullOrEmpty(Model.Recipe.VideoUrl))
             {
-                <a href="@Model.Recipe.VideoUrl" target="_blank" class="btn btn-outline-danger">
-                    ▶️ Video ansehen
+                <a href="@Model.Recipe.VideoUrl" target="_blank" class="btn-accent">
+                    Video ansehen
                 </a>
             }
+
         </div>
     </div>
 </div>
